@@ -1,0 +1,20 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Create account — ZKSurvey</title><meta name="description" content=""><link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/zk.css"></head><body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar"><div class="container" style="display:flex;width:100%"><a class="logo" href="index.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a><nav class="nav" aria-label="Main"><a href="index.html#how">How it works</a><a href="index.html#channels">Channels</a><a href="index.html#usecases">Use cases</a><a href="pricing.html">Pricing</a><span id="authNav" style="display:flex;gap:10px;align-items:center"><a href="login.html">Sign in</a><a class="btn btn-primary" href="register.html">Start free</a></span></nav></div></header>
+<main id="main">
+<section class="section"><div class="container" style="max-width:520px"><div class="zk-card"><h1 style="font-size:28px;color:#fff;margin:0 0 6px">Create your account</h1><p class="sub">Free plan to start. <span id="planNote"></span></p>
+<div id="errs" role="alert" aria-live="polite" style="color:#ffb4c0;font-size:14px;margin-bottom:8px"></div>
+<form id="f" novalidate>
+<label class="zk-label" for="n" style="margin-top:0">Your name *</label><input class="zk-input" id="n" autocomplete="name">
+<label class="zk-label" for="e">Work email *</label><input class="zk-input" id="e" type="email" autocomplete="email">
+<label class="zk-label" for="p">Password * <span class="muted" style="text-transform:none;font-weight:400">(8+ characters, a letter and a number)</span></label><input class="zk-input" id="p" type="password" autocomplete="new-password">
+<label class="zk-label" for="c">Company or brand</label><input class="zk-input" id="c" autocomplete="organization">
+<label class="zk-label" for="u">What will you run first?</label><select class="zk-select" id="u"><option>New product launch</option><option>Software pre-launch</option><option>Market research</option><option>Customer feedback</option><option>Event feedback</option><option>Something else</option></select>
+<label style="display:flex;gap:10px;margin:16px 0;align-items:flex-start;font-size:14px;color:#cfd6ee"><input type="checkbox" id="t" style="margin-top:3px"> <span>I agree to the <a href="legal.html" style="color:#9ce6ff">terms and privacy policy</a> .</span></label>
+<button class="zk-btn primary" style="width:100%" type="submit">Create account</button></form>
+<p class="muted" style="text-align:center;font-size:14px;margin-top:14px">Already have an account? <a href="login.html" style="color:#9ce6ff">Sign in</a></p></div></div></section>
+</main>
+<script src="js/auth.js"></script><script>(function(){var q=new URLSearchParams(location.search),plan=q.get("plan");var P=ZKAuth.plans().find(function(x){return x.id===plan});if(P&&P.price){document.getElementById("planNote").textContent="You chose "+P.name+" — you can complete the upgrade after sign-up."}
+document.getElementById("f").onsubmit=function(ev){ev.preventDefault();var r=ZKAuth.register({name:n.value,email:e.value,password:p.value,company:c.value,focus:u.value,terms:t.checked,plan:plan});
+if(r.errors){document.getElementById("errs").innerHTML=r.errors.map(function(x){return "• "+x}).join("<br>");return;}
+location.href="admin/onboarding.html"+(P&&P.price?"?plan="+P.id:"");};})();</script><script src="js/shell.js"></script></body></html>

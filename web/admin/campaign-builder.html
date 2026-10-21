@@ -1,0 +1,58 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Campaign Builder — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Growth</div><h1>Campaign Builder</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
+
+<div class="zk-split2">
+<div class="zk-card"><h3>Campaign details</h3><p class="sub">Saved to your workspace. Real ad-platform sync is Phase 8.</p>
+<label class="zk-label" style="margin-top:0">Campaign name *</label><input class="zk-input" id="c_n" placeholder="e.g. Coimbatore WhatsApp trial pack">
+<div class="zk-grid2"><div><label class="zk-label">Customer</label><input class="zk-input" id="c_c" list="custs"><datalist id="custs"></datalist></div><div><label class="zk-label">Survey *</label><select class="zk-select" id="c_s"></select></div></div>
+<div class="zk-grid2"><div><label class="zk-label">Channel</label><select class="zk-select" id="c_ch"></select></div><div><label class="zk-label">Status</label><select class="zk-select" id="c_st"><option>Draft</option><option>Active</option><option>Completed</option></select></div></div>
+<div class="zk-grid3"><div><label class="zk-label">Start date</label><input type="date" class="zk-input" id="c_a"></div><div><label class="zk-label">End date</label><input type="date" class="zk-input" id="c_b"></div><div><label class="zk-label">Budget (₹)</label><input type="number" min="0" class="zk-input" id="c_bu"></div></div>
+<label class="zk-label">Target audience</label><input class="zk-input" id="c_au" placeholder="e.g. Households, 25–45, Coimbatore">
+<label class="zk-label">Notes</label><textarea class="zk-textarea" id="c_no" rows="3"></textarea>
+<div style="margin-top:16px;display:flex;gap:8px"><button class="zk-btn primary" id="save">Save campaign</button><a class="zk-btn" href="campaigns.html">Back to campaigns</a></div></div>
+<div class="zk-card"><h3>Tracked link &amp; QR code</h3><p class="sub">Updates as you edit. Only published surveys can receive responses.</p><div id="warn"></div><label class="zk-label" style="margin-top:0">Campaign link (UTM-tagged)</label><div class="zk-code" id="lnk" style="word-break:break-all"></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="zk-btn" id="cp">Copy link</button><a class="zk-btn primary" id="op" target="_blank">Open survey ↗</a><button class="zk-btn" id="dl">Download QR (SVG)</button></div>
+<div id="qr" style="margin-top:16px;display:inline-block;padding:10px;background:#fff;border-radius:12px"></div><p class="muted" style="font-size:12px;margin-top:8px">The QR sits on a white tile on purpose: scanners need a light quiet zone around the code.</p></div></div>
+
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script><script src="../js/vendor/qrcode.js"></script>
+<script>
+
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const surveyOpts=sel=>ZKData.getList().map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+
+const CH=['instagram','facebook','youtube','twitter','whatsapp','meta_ads','email','qr','website'], MED={instagram:'social',facebook:'social',youtube:'social',twitter:'social',whatsapp:'messaging',meta_ads:'paid',email:'email',qr:'offline',website:'organic'};
+const cs=ZKData.getCampaigns(); let cur=qp('id')?cs.find(c=>c.id===qp('id')):null;
+ZG('custs').innerHTML=ZKData.getCustomers().map(c=>'<option value="'+esc(c.name)+'">').join('');
+ZG('c_s').innerHTML=surveyOpts(cur?cur.surveyId:qp('survey')); ZG('c_ch').innerHTML=CH.map(x=>'<option>'+x+'</option>').join('');
+if(cur){ ZG('c_n').value=cur.name; ZG('c_c').value=cur.customer||''; ZG('c_ch').value=cur.channel; ZG('c_st').value=cur.status; ZG('c_a').value=cur.start||''; ZG('c_b').value=cur.end||''; ZG('c_bu').value=cur.budget||''; ZG('c_au').value=cur.audience||''; ZG('c_no').value=cur.notes||''; }
+function url(){ const sid=ZG('c_s').value, d=ZKData.getDef(sid), name=ZG('c_n').value.trim()||'campaign'; const u=new URL('../public/run.html',location.href); u.searchParams.set('s',d.publish.slug||'(publish-first)'); u.searchParams.set('utm_source',ZG('c_ch').value); u.searchParams.set('utm_medium',MED[ZG('c_ch').value]); u.searchParams.set('utm_campaign',ZKData.campaignSlug(name)); return {u:u.toString(),d:d}; }
+function refresh(){ const r=url(); ZG('lnk').textContent=r.u; ZG('op').href=r.u; const ok=r.d.publish.status==='Published'; ZG('warn').innerHTML=ok?'':'<div class="zk-note" style="margin-bottom:12px">This survey is <b>'+esc(r.d.publish.status)+'</b>. Publish it in the Survey Builder before sharing the link.</div>';
+  try{ const q=qrcode(0,'M'); q.addData(r.u); q.make(); ZG('qr').innerHTML=q.createSvgTag({cellSize:4,margin:0,scalable:true}); const s=ZG('qr').querySelector('svg'); if(s){ s.style.width='190px'; s.style.height='190px'; s.style.display='block'; } }catch(e){ ZG('qr').textContent='QR could not be generated for this link.'; } }
+['c_n','c_s','c_ch'].forEach(i=>ZG(i).oninput=refresh); refresh();
+ZG('cp').onclick=()=>{ (navigator.clipboard?navigator.clipboard.writeText(ZG('lnk').textContent):Promise.reject()).then(()=>toast('Link copied'),()=>toast('Select the link and copy it manually.')); };
+ZG('dl').onclick=()=>{ const s=ZG('qr').querySelector('svg'); if(!s) return; const b=new Blob(['<?xml version="1.0"?>'+s.outerHTML.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"')],{type:'image/svg+xml'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=ZKData.campaignSlug(ZG('c_n').value||'campaign')+'_qr.svg'; a.click(); };
+ZG('save').onclick=()=>{ const n=ZG('c_n').value.trim(); if(!n){ toast('Give the campaign a name.'); return; } if(ZG('c_a').value&&ZG('c_b').value&&ZG('c_b').value<ZG('c_a').value){ toast('End date is before the start date.'); return; }
+  const rec={id:cur?cur.id:ZKStore.uid('cmp'),name:n,customer:ZG('c_c').value.trim(),surveyId:ZG('c_s').value,channel:ZG('c_ch').value,status:ZG('c_st').value,start:ZG('c_a').value,end:ZG('c_b').value,budget:parseFloat(ZG('c_bu').value)||0,audience:ZG('c_au').value.trim(),notes:ZG('c_no').value.trim()};
+  const all=ZKData.getCampaigns(); const i=all.findIndex(x=>x.id===rec.id); if(i>=0) all[i]=rec; else all.push(rec); ZKData.saveCampaigns(all); cur=rec; history.replaceState(null,'','?id='+rec.id); toast('Campaign saved.'); };
+
+</script><script src="../js/shell.js"></script></body></html>

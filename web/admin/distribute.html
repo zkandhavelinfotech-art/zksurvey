@@ -1,0 +1,187 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Distribute — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Growth</div><h1>Distribute</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
+
+<p class="muted" style="margin:-8px 0 16px">Turn a published survey into a poster and a ready-to-post kit for each channel. Every channel gets its own tagged link, so leads show where they came from.</p>
+<div class="zk-card"><div class="zk-hdr2"><div><label class="zk-label" style="margin-top:0" for="sv">Survey</label><select class="zk-select" id="sv"></select></div><div id="st" style="text-align:right"></div></div><div id="gate" style="margin-top:12px"></div><div id="hostwarn"></div></div>
+<div class="zk-split2" style="margin-top:16px">
+<div class="zk-card"><h3>1 · Poster</h3><p class="sub">Edit the words, pick a look, download one size or all.</p>
+<label class="zk-label" style="margin-top:0" for="p_h">Headline</label><input class="zk-input" id="p_h" maxlength="90">
+<label class="zk-label" for="p_s">Sub-headline</label><input class="zk-input" id="p_s" maxlength="110">
+<label class="zk-label" for="p_i">Incentive (optional)</label><input class="zk-input" id="p_i" maxlength="60" placeholder="e.g. Early-bird offer for everyone who answers">
+<div class="zk-grid2"><div><label class="zk-label" for="p_b">Brand name</label><input class="zk-input" id="p_b" maxlength="40"></div><div><label class="zk-label" for="p_c">Call to action</label><input class="zk-input" id="p_c" maxlength="40"></div></div>
+<div class="zk-grid2"><div><label class="zk-label" for="p_t">Look</label><select class="zk-select" id="p_t"></select></div><div><label class="zk-label" for="p_l">Your logo (optional)</label><input class="zk-input" id="p_l" type="file" accept="image/png,image/jpeg,image/svg+xml"></div></div>
+</div>
+<div class="zk-card"><h3>Preview</h3><div id="fmtTabs" class="zk-tabs" role="tablist" style="margin:8px 0"></div>
+<div style="background:#0c1122;border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;justify-content:center;max-height:560px;overflow:auto"><canvas id="cv" style="max-width:100%;height:auto;border-radius:8px" aria-label="Poster preview"></canvas></div>
+<div id="lock" class="muted" style="font-size:13px;margin-top:8px"></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="zk-btn primary" id="dl">Download this size (PNG)</button><button class="zk-btn" id="dlAll">Download all sizes</button><button class="zk-btn" id="ogBtn">Use as link-preview image</button></div><p class="muted" style="font-size:12px;margin:8px 0 0" id="ogNote">Sets the picture Facebook, WhatsApp, X and LinkedIn show when someone shares your tracked short link.</p></div></div>
+<div class="zk-card" style="margin-top:16px"><div class="zk-row"><div><h3>2 · Channel kits</h3><p class="sub">Caption, tagged link and the quickest way to post on each channel.</p></div><button class="zk-btn" id="mkCamp">Create tracked campaigns for all channels</button></div><div id="kits" class="zk-grid2" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))"></div></div>
+<div class="zk-card" style="margin-top:16px"><h3>3 · Poll kit (YouTube, X, Instagram Stories)</h3><p class="sub">These platforms have their own poll tools. Post the poll there and point people to the full survey.</p>
+<label class="zk-label" style="margin-top:0" for="po_q">Poll question</label><input class="zk-input" id="po_q"><label class="zk-label" for="po_o">Options (one per line)</label><textarea class="zk-textarea" id="po_o" rows="4"></textarea><div id="po_w" class="muted" style="font-size:13px;margin-top:6px"></div>
+<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="zk-btn" id="po_c">Copy poll text</button></div><p class="muted" style="font-size:12px;margin-top:8px">Poll limits (number of options, characters per option, duration) differ by platform and change — check the platform's current limits before posting.</p></div>
+<div class="zk-card" style="margin-top:16px"><h3>4 · Meta Ads brief</h3><div id="ads"></div></div>
+<div class="zk-card" style="margin-top:16px"><h3>5 · Where responses and leads are coming from</h3><div id="src" class="muted">—</div></div>
+
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script><script src="../js/vendor/qrcode.js"></script>
+<script>
+
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const surveyOpts=sel=>ZKData.getList().map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+const DIST_KEY='zk_dist_v12';
+function distGet(id){ return (ZKStore.get(DIST_KEY,{})[id])||{poster:{},channels:{}}; }
+function distMark(id,kind,key){ const all=ZKStore.get(DIST_KEY,{}); const d=all[id]||{poster:{},channels:{}}; d[kind][key]=Date.now(); all[id]=d; ZKStore.set(DIST_KEY,all); }
+
+const FORMATS=[{id:'ig-post',label:'Instagram post',w:1080,h:1080,ch:'instagram'},{id:'ig-story',label:'Instagram Story',w:1080,h:1920,ch:'instagram'},{id:'fb-post',label:'Facebook post',w:1200,h:630,ch:'facebook'},{id:'yt',label:'YouTube',w:1280,h:720,ch:'youtube'},{id:'x-post',label:'X post',w:1600,h:900,ch:'twitter'}];
+const CHANNELS=[{id:'instagram',name:'Instagram',medium:'social',fmt:'ig-post',share:null},{id:'facebook',name:'Facebook',medium:'social',fmt:'fb-post',share:'fb'},{id:'youtube',name:'YouTube',medium:'social',fmt:'yt',share:null},{id:'twitter',name:'X (Twitter)',medium:'social',fmt:'x-post',share:'x'},{id:'whatsapp',name:'WhatsApp',medium:'messaging',fmt:'ig-post',share:'wa'}];
+const THEMES={aurora:{n:'Aurora violet',a:'#0b1020',b:'#2a1f6b',c:'#8b7cff',d:'#38d0ff'},ocean:{n:'Ocean',a:'#06141f',b:'#0c4a6e',c:'#38bdf8',d:'#34d399'},sunset:{n:'Sunset',a:'#1f0b14',b:'#7c2d3f',c:'#fb923c',d:'#fb7185'},forest:{n:'Forest',a:'#06160f',b:'#14532d',c:'#34d399',d:'#fbbf24'},mono:{n:'Mono',a:'#0a0a0f',b:'#27272f',c:'#e5e7eb',d:'#9ca3af'}};
+let sid=qp('survey')||(ZKData.getList().find(s=>ZKData.statusOf(s.id)==='Published')||ZKData.getList()[0]||{}).id;
+let fmt=FORMATS[0], logoImg=null, plan=ZKAuth.planOf(), P={};
+if(!sid){ document.querySelector('main').insertAdjacentHTML('beforeend','<div class="zk-empty">Create a survey first, then come back to make its poster.</div>'); throw new Error('no survey'); }
+ZG('p_t').innerHTML=Object.keys(THEMES).map(k=>'<option value="'+k+'">'+THEMES[k].n+'</option>').join('');
+const baseUrl=()=>new URL('../public/run.html',location.href).toString();
+function def(){ return ZKData.getDef(sid); }
+const SHORT={};
+function link(source,medium){ if(!isPub()) return longLink(source,medium); const k=sid+'|'+source+'|'+(medium||'social'); if(SHORT[k]) return SHORT[k];
+  const d=def(); const r=ZKApi.call('POST','/surveys/'+encodeURIComponent(sid)+'/links',{channel:source,utm:{utm_source:source,utm_medium:medium||'social',utm_campaign:ZKData.campaignSlug(d.details.title)}});
+  if(r.status===200){ SHORT[k]=ZKApi.origin+'/s/'+r.data.code; return SHORT[k]; } return longLink(source,medium); }
+function longLink(source,medium){ const d=def(); const u=new URL(baseUrl()); u.searchParams.set('s',d.publish.slug||'publish-first'); u.searchParams.set('utm_source',source); u.searchParams.set('utm_medium',medium||'social'); u.searchParams.set('utm_campaign',ZKData.campaignSlug(d.details.title)); return u.toString(); }
+function isPub(){ return def().publish.status==='Published'; }
+function defaults(){ const d=def().details, prod=d.product||d.title;
+  P={h:'Help us shape '+prod, s:'Takes '+(d.time||'2–4 minutes')+'. Your opinion counts.', i:'', b:d.customer||(ZKAuth.current()||{}).company||'', c:'Scan the QR code or tap the link', t:'aurora'};
+  ZG('p_h').value=P.h; ZG('p_s').value=P.s; ZG('p_i').value=P.i; ZG('p_b').value=P.b; ZG('p_c').value=P.c; ZG('p_t').value=P.t; }
+function readP(){ P={h:ZG('p_h').value,s:ZG('p_s').value,i:ZG('p_i').value,b:ZG('p_b').value,c:ZG('p_c').value,t:ZG('p_t').value}; }
+function wrap(ctx,text,maxW){ const words=String(text).split(/\s+/).filter(Boolean), lines=[]; let cur=''; words.forEach(w=>{ const t=cur?cur+' '+w:w; if(ctx.measureText(t).width>maxW&&cur){ lines.push(cur); cur=w; } else cur=t; }); if(cur) lines.push(cur); return lines; }
+function fitText(ctx,text,maxW,maxH,start,min,weight,lh){ let size=start; for(;size>=min;size-=2){ ctx.font=weight+' '+size+'px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif'; const L=wrap(ctx,text,maxW); if(L.length*size*lh<=maxH) return {size:size,lines:L}; } ctx.font=weight+' '+min+'px system-ui,sans-serif'; const L=wrap(ctx,text,maxW); const mx=Math.max(1,Math.floor(maxH/(min*lh))); return {size:min,lines:L.slice(0,mx)}; }
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function drawPoster(cv,F,o){
+  const W=F.w,H=F.h; cv.width=W; cv.height=H; const ctx=cv.getContext('2d'); const T=THEMES[o.t]||THEMES.aurora;
+  const g=ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,T.a); g.addColorStop(1,T.b); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  const glow=(x,y,r,c)=>{ const rg=ctx.createRadialGradient(x,y,0,x,y,r); rg.addColorStop(0,c+'66'); rg.addColorStop(1,c+'00'); ctx.fillStyle=rg; ctx.fillRect(0,0,W,H); };
+  glow(W*0.85,H*0.1,Math.max(W,H)*0.55,T.c); glow(W*0.1,H*0.95,Math.max(W,H)*0.5,T.d);
+  const land=W/H>1.2, port=H/W>1.4; const pad=Math.round(Math.min(W,H)*0.07);
+  const qrSize=port?Math.round(W*0.42):land?Math.round(H*0.5):Math.round(W*0.3);
+  let tx=pad, tw, ty=pad, th;
+  if(land){ tw=W-qrSize-pad*3.2; }
+  else tw=W-pad*2;
+  // brand
+  ctx.textBaseline='top'; ctx.fillStyle=T.c; const bs=Math.round(Math.min(W,H)*0.034); ctx.font='800 '+bs+'px system-ui,sans-serif'; 
+  const brand=(o.b||'').toUpperCase(); if(brand){ rr(ctx,tx,ty,6,bs*1.2,3); ctx.fill(); ctx.fillStyle='#ffffffcc'; ctx.fillText(brand,tx+22,ty+2); }
+  if(logoImg){ const lh=Math.round(Math.min(W,H)*0.09); const lw=logoImg.width/logoImg.height*lh; const lx=land?W-qrSize-pad*2-lw:W-pad-lw; ctx.drawImage(logoImg,lx,ty,lw,lh); }
+  ty+=bs*2.2;
+  // text block area
+  const bottomReserve = land? pad : (qrSize+pad*2.2);
+  const availH = H-ty-bottomReserve;
+  const hs=port?112:land?96:92;
+  const hf=fitText(ctx,o.h||'',tw,availH*(o.i?0.5:0.58),hs,36,'800',1.12);
+  ctx.fillStyle='#ffffff'; ctx.font='800 '+hf.size+'px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif'; hf.lines.forEach((l,i)=>ctx.fillText(l,tx,ty+i*hf.size*1.12)); ty+=hf.lines.length*hf.size*1.12+pad*0.4;
+  const ss=Math.round(hf.size*0.38); const sf=fitText(ctx,o.s||'',tw,availH*0.2,Math.max(ss,28),22,'500',1.3);
+  ctx.fillStyle='#d6dcf2'; ctx.font='500 '+sf.size+'px system-ui,sans-serif'; sf.lines.forEach((l,i)=>ctx.fillText(l,tx,ty+i*sf.size*1.3)); ty+=sf.lines.length*sf.size*1.3+pad*0.5;
+  if(o.i){ const is=Math.max(24,Math.round(sf.size*0.9)); ctx.font='700 '+is+'px system-ui,sans-serif'; const lines=wrap(ctx,o.i,tw-is*2).slice(0,2); const ph=lines.length*is*1.25+is*0.9; const pw=Math.min(tw,Math.max.apply(null,lines.map(l=>ctx.measureText(l).width))+is*2); const gg=ctx.createLinearGradient(tx,ty,tx+pw,ty); gg.addColorStop(0,T.c); gg.addColorStop(1,T.d); ctx.fillStyle=gg; rr(ctx,tx,ty,pw,ph,ph/2>40?28:ph/2); ctx.fill(); ctx.fillStyle='#07101e'; lines.forEach((l,i)=>ctx.fillText(l,tx+is,ty+is*0.45+i*is*1.25)); ty+=ph+pad*0.3; }
+  // QR
+  const url=o.url; let qx,qy; const tile=qrSize;
+  if(land){ qx=W-pad-tile; qy=Math.round((H-tile)/2-pad*0.4); } else { qx=W-pad-tile; qy=H-pad*1.4-tile; if(port){ qx=Math.round((W-tile)/2); qy=H-pad*1.6-tile-40; } }
+  try{ const q=qrcode(0,'M'); q.addData(url); q.make(); const n=q.getModuleCount(); const quiet=4; const cell=Math.max(2,Math.floor(tile/(n+quiet*2))); const real=cell*(n+quiet*2);
+    qx=Math.round(qx+(tile-real)/2); qy=Math.round(qy+(tile-real)/2);
+    ctx.fillStyle='#ffffff'; rr(ctx,qx,qy,real,real,Math.round(cell*2)); ctx.fill(); ctx.fillStyle='#0a0d18';
+    for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(q.isDark(r,c)) ctx.fillRect(qx+(c+quiet)*cell,qy+(r+quiet)*cell,cell,cell);
+    // CTA + url next to / under QR
+    const cs=Math.max(26,Math.round(Math.min(W,H)*0.036)); ctx.fillStyle='#ffffff'; ctx.font='700 '+cs+'px system-ui,sans-serif';
+    if(land){ const cl=wrap(ctx,o.c||'',tile+pad); cl.slice(0,2).forEach((l,i)=>ctx.fillText(l,qx-0,qy+real+cs*0.5+i*cs*1.2)); }
+    else if(port){ const cl=wrap(ctx,o.c||'',W-pad*2); cl.slice(0,2).forEach((l,i)=>{ ctx.textAlign='center'; ctx.fillText(l,W/2,qy-cs*1.5-(cl.length-1-i)*cs*1.2+0); ctx.textAlign='left'; }); }
+    else { const cl=wrap(ctx,o.c||'',W-pad*3-real); ctx.textBaseline='middle'; cl.slice(0,3).forEach((l,i)=>ctx.fillText(l,pad,qy+real/2+(i-(Math.min(cl.length,3)-1)/2)*cs*1.3)); ctx.textBaseline='top'; }
+    const us=Math.max(18,Math.round(cs*0.62)); ctx.fillStyle='#aab3d1'; ctx.font='500 '+us+'px ui-monospace,Menlo,Consolas,monospace'; const short=url.replace(/^https?:\/\//,'').replace(/&utm_.*$/,'').replace(/\?utm_.*$/,'');
+    const ut=short.length>44?short.slice(0,41)+'…':short; if(land){ ctx.fillText(ut,qx-Math.max(0,ctx.measureText(ut).width-real),qy+real+cs*0.5+(wrap(ctx,o.c||'',tile+pad).slice(0,2).length)*cs*1.2+8); } else if(port){ ctx.textAlign='center'; ctx.fillText(ut,W/2,qy+real+us*0.9); ctx.textAlign='left'; } else { ctx.fillText(ut,pad,H-pad-us*1.2); }
+  }catch(e){ ctx.fillStyle='#fff'; ctx.font='600 28px sans-serif'; ctx.fillText('QR could not be generated',pad,H-pad*2); }
+  // footer branding
+  const fs=Math.max(18,Math.round(Math.min(W,H)*0.022)); ctx.font='600 '+fs+'px system-ui,sans-serif'; ctx.fillStyle=o.mark?'#ffffffee':'#ffffff77'; const ft=o.mark?'Made with ZKSurvey — free surveys at zksurvey':'Powered by ZKSurvey'; ctx.textAlign='left'; if(land||!port) ctx.fillText(ft,pad,H-pad*0.9-fs*0.2); else { ctx.textAlign='center'; ctx.fillText(ft,W/2,H-pad*0.8); ctx.textAlign='left'; }
+}
+function locked(f){ return FORMATS.indexOf(f)>=plan.formats; }
+function render(){ readP(); const cv=ZG('cv'); drawPoster(cv,fmt,{h:P.h,s:P.s,i:P.i,b:P.b,c:P.c,t:P.t,url:link(fmt.ch,'social'),mark:plan.watermark});
+  ZG('fmtTabs').innerHTML=FORMATS.map(f=>'<button role="tab" aria-selected="'+(f===fmt)+'" class="'+(f===fmt?'on':'')+'" data-f="'+f.id+'">'+esc(f.label)+(locked(f)?' 🔒':'')+'<div class="muted" style="font-size:10px;font-weight:400">'+f.w+'×'+f.h+'</div></button>').join('');
+  document.querySelectorAll('#fmtTabs [data-f]').forEach(b=>b.onclick=()=>{ fmt=FORMATS.find(x=>x.id===b.dataset.f); render(); });
+  ZG('lock').innerHTML=locked(fmt)?'<b>'+esc(fmt.label)+'</b> is not in the '+esc(plan.name)+' plan. <a href="billing.html" style="color:#9ce6ff">Upgrade</a> to download it.':(plan.watermark?'Free plan posters carry a “Made with ZKSurvey” line. <a href="billing.html" style="color:#9ce6ff">Upgrade</a> to remove it.':'QR encodes the '+esc(fmt.ch)+' link, so scans are counted as '+esc(fmt.ch)+' leads.'); }
+function dlFmt(f){ if(locked(f)){ toast(f.label+' needs a higher plan.'); return false; } const cv=document.createElement('canvas'); drawPoster(cv,f,{h:P.h,s:P.s,i:P.i,b:P.b,c:P.c,t:P.t,url:link(f.ch,'social'),mark:plan.watermark});
+  cv.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='poster_'+(def().publish.slug||'survey')+'_'+f.id+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); },'image/png'); distMark(sid,'poster',f.id); return true; }
+ZG('dl').onclick=()=>{ if(dlFmt(fmt)){ toast('Poster downloaded.'); renderSrc(); } };
+ZG('ogBtn').onclick=()=>{ if(!isPub()){ toast('Publish the survey first.'); return; } readP(); const f=FORMATS.find(x=>x.id==='fb-post'), cv=document.createElement('canvas'); drawPoster(cv,f,{h:P.h,s:P.s,i:P.i,b:P.b,c:P.c,t:P.t,url:link('preview','social'),mark:plan.watermark});
+  cv.toBlob(b=>{ fetch(ZKApi.api+'/surveys/'+encodeURIComponent(sid)+'/poster',{method:'PUT',headers:{'Content-Type':'image/png','X-ZK-CSRF':'1'},body:b,credentials:'same-origin'}).then(r=>r.json().then(j=>toast(r.ok?'Link-preview image updated.':(j.message||'Upload failed.'))),()=>toast('Upload failed.')); },'image/png'); };
+ZG('dlAll').onclick=()=>{ let n=0; FORMATS.forEach((f,i)=>{ if(!locked(f)){ setTimeout(()=>dlFmt(f),i*350); n++; } }); toast(n+' poster(s) downloading'+(n<FORMATS.length?' — upgrade for the rest.':'.')); };
+ZG('p_l').onchange=e=>{ const f=e.target.files[0]; if(!f) return; if(f.size>1500000){ toast('Logo is too large (max 1.5 MB).'); return; } const r=new FileReader(); r.onload=()=>{ const im=new Image(); im.onload=()=>{ logoImg=im; render(); }; im.src=r.result; }; r.readAsDataURL(f); };
+['p_h','p_s','p_i','p_b','p_c','p_t'].forEach(i=>{ ZG(i).oninput=ZG(i).onchange=()=>{ render(); kits(); }; });
+function caption(ch){ const d=def().details, prod=d.product||d.title, u=link(ch.id,ch.medium), inc=P.i?(' '+P.i+'.'):'';
+  const tag='#survey #feedback #newlaunch';
+  if(ch.id==='instagram') return '📣 '+P.h+'!\n\n'+P.s+inc+'\n\nTap the link in our bio to take the survey.\n\n'+tag;
+  if(ch.id==='facebook') return '📣 '+P.h+'!\n\n'+P.s+inc+'\n\nTake the survey: '+u;
+  if(ch.id==='youtube') return P.h+'\n\n'+P.s+inc+'\n\nTake the survey: '+u;
+  if(ch.id==='twitter') return P.h+' — a quick survey. '+tag.split(' ')[0];
+  return '*'+P.h+'*\n'+P.s+inc+'\nTake the survey: '+u; }
+function xLen(t,u){ return t.length+1+23; }
+function kits(){ readP(); const pub=isPub();
+  ZG('kits').innerHTML=CHANNELS.map(ch=>{ const u=link(ch.id,ch.medium), cap=caption(ch); const d=distGet(sid); const done=d.channels[ch.id];
+    const note= ch.id==='instagram'?'Captions do not make links clickable on Instagram: put the link in your bio, a Story link sticker, or an ad. The poster QR also works.': ch.id==='youtube'?'Post as a Community post (if your channel has it) or add the link to a video description and end screen. Direct posting from here arrives in Phase 8.': ch.id==='twitter'?'Length counts the link as 23 characters.':'';
+    const cnt=ch.id==='twitter'?'<div class="muted" style="font-size:12px" data-cnt="'+ch.id+'">'+xLen(cap,u)+' / 280</div>':'';
+    return '<div class="zk-card" style="margin:0"><div class="zk-row"><h3>'+esc(ch.name)+'</h3>'+(done?'<span class="zk-chip g">Prepared '+fmtD(done)+'</span>':'<span class="zk-chip">Not posted</span>')+'</div>'
+     +'<label class="zk-label" for="cap_'+ch.id+'" style="margin-top:6px">Caption</label><textarea class="zk-textarea" id="cap_'+ch.id+'" rows="5">'+esc(cap)+'</textarea>'+cnt
+     +'<label class="zk-label">Tracked short link <span class="muted" style="text-transform:none;font-weight:400">(counts clicks, shows the poster in link previews)</span></label><div class="zk-code" style="font-size:12px">'+esc(u)+'</div>'
+     +(note?'<p class="muted" style="font-size:12px;margin:8px 0 0">'+note+'</p>':'')
+     +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="zk-btn sm" data-cc="'+ch.id+'">Copy caption</button><button class="zk-btn sm" data-cl="'+ch.id+'">Copy link</button>'+(ch.share?'<button class="zk-btn sm primary" data-sh="'+ch.id+'"'+(pub?'':' disabled')+'>Share now ↗</button>':'<button class="zk-btn sm" data-pf="'+ch.fmt+'">Show poster</button>')+'</div></div>'; }).join('');
+  const val=id=>ZG('cap_'+id).value;
+  document.querySelectorAll('[data-cc]').forEach(b=>b.onclick=()=>{ copy(val(b.dataset.cc),'Caption copied'); distMark(sid,'channels',b.dataset.cc); });
+  document.querySelectorAll('[data-cl]').forEach(b=>b.onclick=()=>{ const ch=CHANNELS.find(c=>c.id===b.dataset.cl); copy(link(ch.id,ch.medium),'Link copied'); });
+  document.querySelectorAll('[data-pf]').forEach(b=>b.onclick=()=>{ fmt=FORMATS.find(f=>f.id===b.dataset.pf); render(); window.scrollTo({top:0,behavior:'smooth'}); });
+  document.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>{ const ch=CHANNELS.find(c=>c.id===b.dataset.sh), u=link(ch.id,ch.medium), t=val(ch.id); let href;
+    if(ch.share==='fb') href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(u);
+    if(ch.share==='x') href='https://twitter.com/intent/tweet?text='+encodeURIComponent(t)+'&url='+encodeURIComponent(u);
+    if(ch.share==='wa') href='https://wa.me/?text='+encodeURIComponent(t);
+    distMark(sid,'channels',ch.id); window.open(href,'_blank','noopener'); });
+  document.querySelectorAll('textarea[id^=cap_twitter]').forEach(t=>t.oninput=()=>{ const c=document.querySelector('[data-cnt=twitter]'); if(c){ const n=xLen(t.value); c.textContent=n+' / 280'+(n>280?' — too long':''); c.style.color=n>280?'#ffb4c0':''; } }); }
+function copy(t,msg){ (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(msg),()=>{ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); toast(msg); }catch(e){ toast('Select the text and copy it manually.'); } ta.remove(); }); }
+function poll(){ const d=def(); const q=d.questions.find(x=>x.type==='Single Choice'&&x.options.length>=2)||null; ZG('po_q').value=q?q.text:'Which do you prefer?'; ZG('po_o').value=q?q.options.slice(0,4).map(o=>o.text).join('\n'):'Option A\nOption B'; pollWarn(); }
+function pollWarn(){ const o=ZG('po_o').value.split('\n').map(x=>x.trim()).filter(Boolean); const long=o.filter(x=>x.length>25).length; ZG('po_w').innerHTML=o.length+' option(s)'+(o.length>4?' — most platforms allow 4 or fewer':'')+(long?' · '+long+' option(s) longer than 25 characters — shorten them for X polls':''); }
+ZG('po_o').oninput=pollWarn; ZG('po_c').onclick=()=>{ copy(ZG('po_q').value+'\n'+ZG('po_o').value.split('\n').filter(Boolean).map((x,i)=>(i+1)+'. '+x).join('\n')+'\n\nFull survey: '+link('twitter','social'),'Poll text copied'); distMark(sid,'channels','poll'); };
+function ads(){ if(!ZKAuth.can('ads')){ ZG('ads').innerHTML='<div class="zk-note">The Meta Ads brief is included in the <b>Growth</b> and <b>Agency</b> plans. <a href="billing.html" style="color:#9ce6ff">Upgrade</a></div>'; return; }
+  const d=def().details, pr=ZKData.getProjects().find(p=>p.id===d.projectId);
+  ZG('ads').innerHTML='<div class="zk-note" style="margin-bottom:12px"><b>Not connected.</b> ZKSurvey cannot create or run ads in Meta Ads Manager yet (Phase 8). This brief gives you everything to paste into Ads Manager yourself; leads arriving from the tagged link are attributed to <code>meta_ads</code>.</div>'
+   +'<div class="zk-grid2"><div><label class="zk-label" style="margin-top:0" for="a_o">Objective</label><select class="zk-select" id="a_o"><option>Leads / sign-ups</option><option>Traffic</option><option>Engagement</option></select></div><div><label class="zk-label" style="margin-top:0" for="a_b">Daily budget (₹)</label><input class="zk-input" id="a_b" type="number" min="0" placeholder="Your decision"></div></div>'
+   +'<label class="zk-label" for="a_a">Audience</label><input class="zk-input" id="a_a" value="'+esc(((pr&&pr.geography)||d.market||'')+'')+'" placeholder="Location, age range, interests">'
+   +'<label class="zk-label" for="a_p">Placements</label><input class="zk-input" id="a_p" value="Instagram feed, Instagram Stories, Facebook feed">'
+   +'<label class="zk-label" for="a_t">Primary text</label><textarea class="zk-textarea" id="a_t" rows="3">'+esc(P.h+'. '+P.s)+'</textarea>'
+   +'<div class="zk-grid2"><div><label class="zk-label" for="a_h">Headline</label><input class="zk-input" id="a_h" value="'+esc(P.h)+'" maxlength="40"></div><div><label class="zk-label" for="a_c">Button</label><select class="zk-select" id="a_c"><option>Learn more</option><option>Sign up</option><option>Get offer</option></select></div></div>'
+   +'<label class="zk-label">Destination URL (tagged)</label><div class="zk-code" style="font-size:12px">'+esc(link('meta_ads','paid'))+'</div>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="zk-btn primary" id="a_dl">Download ad brief (.md)</button><button class="zk-btn" disabled title="Phase 8">Connect Meta Ads — not available yet</button></div>';
+  ZG('a_dl').onclick=()=>{ const md='# Meta Ads brief — '+d.title+'\n\n- Objective: '+ZG('a_o').value+'\n- Daily budget (INR): '+(ZG('a_b').value||'to be decided')+'\n- Audience: '+ZG('a_a').value+'\n- Placements: '+ZG('a_p').value+'\n- Primary text: '+ZG('a_t').value+'\n- Headline: '+ZG('a_h').value+'\n- Button: '+ZG('a_c').value+'\n- Destination URL: '+link('meta_ads','paid')+'\n- Creatives: download the poster sizes from Distribute (Instagram post / Story, Facebook post).\n\nNote: not connected to Ads Manager. Create the campaign there and use this brief.\n'; const b=new Blob([md],{type:'text/markdown'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='meta_ads_brief_'+(def().publish.slug||'survey')+'.md'; a.click(); distMark(sid,'channels','meta_ads'); toast('Brief downloaded.'); }; }
+function renderSrc(){ const d=def(), resp=ZKData.getResponses(sid), lq=d.questions.filter(q=>q.type==='Lead Capture').map(q=>q.id); const t={}; resp.forEach(r=>{ const s=(r.utm&&r.utm.utm_source)||'direct'; t[s]=t[s]||{n:0,l:0}; t[s].n++; if(lq.some(q=>r.answers[q])) t[s].l++; });
+  const L=isPub()?(ZKApi.call('GET','/surveys/'+encodeURIComponent(sid)+'/links').data.links||[]):[]; const ck={}; L.forEach(l=>{ const k=(l.utm&&l.utm.utm_source)||l.channel; ck[k]=(ck[k]||0)+l.clicks; Object.keys(ck).forEach(x=>{ if(!t[x]) t[x]={n:0,l:0}; }); });
+  const rows=Object.entries(t).sort((a,b)=>b[1].n-a[1].n||(ck[b[0]]||0)-(ck[a[0]]||0)); ZG('src').innerHTML=rows.length?'<div class="table-wrap"><table class="table"><thead><tr><th>Source</th><th>Link clicks</th><th>Responses</th><th>Click → response</th><th>Leads</th><th>Lead rate</th></tr></thead><tbody>'+rows.map(([k,v])=>'<tr><td><span class="zk-chip c">'+esc(k)+'</span></td><td>'+(ck[k]==null?'—':ck[k])+'</td><td>'+v.n+'</td><td>'+(ck[k]?Math.round(v.n/ck[k]*100)+'%':'—')+'</td><td>'+v.l+'</td><td>'+(v.n?Math.round(v.l/v.n*100):0)+'%</td></tr>').join('')+'</tbody></table></div><p class="muted" style="font-size:12px">Clicks are counted on the tracked short link (link-preview bots are not counted). Responses are attributed from the tag on the link or QR code. <a href="leads.html" style="color:#9ce6ff">Open Leads</a> · <a href="sources.html" style="color:#9ce6ff">Sources</a></p>':'No responses yet. Post a poster or share a link, then come back.'; }
+function gate(){ const d=def(); ZG('st').innerHTML='<span class="zk-chip '+(isPub()?'g':'o')+'">'+esc(d.publish.status)+'</span>';
+  const h=location.hostname; ZG('hostwarn').innerHTML=(h==='localhost'||h==='127.0.0.1'||location.protocol==='file:')?'<div class="zk-note" style="margin-top:12px">Links and QR codes use the address this page is served from (<b>'+esc(location.host||'a local file')+'</b>). Host the site on a public address before posting or printing, or people outside this computer cannot open them.</div>':'';
+  if(isPub()){ ZG('gate').innerHTML=''; return; }
+  ZG('gate').innerHTML='<div class="zk-note"><b>This survey is '+esc(d.publish.status)+'.</b> Publish it to get a live public link. <button class="zk-btn sm primary" id="pubNow">Publish now</button> <a class="zk-btn sm" href="survey-builder.html?survey='+sid+'">Open in builder</a></div>';
+  ZG('pubNow').onclick=()=>{ const bad=ZKData.validate(d).filter(x=>x.level==='bad'); if(bad.length){ toast('Fix first: '+bad[0].text); return; } const pl=ZKAuth.planOf(); const a=ZKAuth.current(); if(a.role!=='superadmin'&&ZKData.usage().responses>=pl.responses){ toast('Response limit reached on the '+pl.name+' plan.'); return; }
+    if(!d.publish.slug){ const b=ZKData.slugify(d.details.title); let s=b,n=1; while(ZKData.getList().some(x=>x.id!==sid&&ZKData.getDef(x.id).publish.slug===s)||ZKAuth.slugTaken(s)) s=b+'-'+(++n); d.publish.slug=s; } d.publish.status='Published'; d.publish.publishedAt=Date.now(); d.publish.validatedAt=Date.now(); if(ZKData.saveDef(sid,d)===false){ toast(ZKData.lastError()); init(); return; } toast('Survey published.'); init(); }; }
+function init(){ ZG('sv').innerHTML=surveyOpts(sid); gate(); defaults(); render(); kits(); poll(); ads(); renderSrc(); }
+ZG('sv').onchange=e=>{ sid=e.target.value; history.replaceState(null,'','?survey='+sid); init(); };
+ZG('mkCamp').onclick=()=>{ const all=ZKData.getCampaigns(); const d=def(); let n=0; CHANNELS.concat(ZKAuth.can('ads')?[{id:'meta_ads',name:'Meta Ads'}]:[]).forEach(ch=>{ const name=d.details.title+' — '+ch.name; if(all.some(c=>c.name===name&&c.surveyId===sid)) return; all.push({id:ZKStore.uid('cmp'),name:name,customer:d.details.customer||'',surveyId:sid,channel:ch.id,status:'Active',start:new Date().toISOString().slice(0,10),end:'',budget:0,audience:'',notes:'Created from Distribute'}); n++; }); ZKData.saveCampaigns(all); toast(n?n+' campaign(s) created — see Campaigns.':'Campaigns already exist for these channels.'); };
+init();
+
+</script><script src="../js/shell.js"></script></body></html>

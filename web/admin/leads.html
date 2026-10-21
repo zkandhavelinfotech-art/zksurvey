@@ -1,0 +1,55 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Leads — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Admin</div><h1>Leads</h1></div><div style="display:flex;gap:8px"><button class="zk-btn" id="btnExport">Export CSV</button><select class="zk-select" id="surveySel" style="width:auto;min-width:260px"></select></div></div>
+<div class="zk-grid3" id="kpis" style="margin-bottom:18px"></div>
+<div class="zk-card"><h3>Captured leads</h3><p class="sub">Everyone who answered a Lead Capture question and ticked consent. Status is tracked here only — the scope's New → Interested → Qualified → Contacted → Converted pipeline.</p><div class="table-wrap"><table class="table"><thead><tr><th>Name</th><th>Mobile</th><th>Email</th><th>City</th><th>Survey</th><th>Source</th><th>When</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div></div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const esc=ZKData.esc, list=ZKData.getList();
+const sel=document.getElementById('surveySel');
+sel.innerHTML='<option value="all">All surveys</option>'+list.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('');
+sel.onchange=render;
+function fmt(t){ return new Date(t).toLocaleDateString([], {month:'short',day:'numeric'}); }
+function leadsOf(scope){
+  const all = scope==='all' ? ZKData.allResponses() : ZKData.getResponses(scope).map(r=>Object.assign({surveyId:scope, surveyName:list.find(s=>s.id===scope).name}, r));
+  const out=[];
+  all.forEach(r=>{ const def=ZKData.getDef(r.surveyId); def.questions.filter(q=>q.type==='Lead Capture').forEach(q=>{ const a=r.answers[q.id]; if(a && (a.name||a.mobile||a.email)) out.push({rid:r.id, surveyName:r.surveyName, at:r.at, source:(r.utm&&r.utm.utm_source)||'direct', lead:a}); }); });
+  return out.sort((a,b)=>b.at-a.at);
+}
+function statusChip(st){ const cls=st==='Converted'?'g':st==='Qualified'||st==='Contacted'?'c':st==='Interested'?'o':''; return cls; }
+function render(){
+  const leads=leadsOf(sel.value);
+  const by={}; leads.forEach(l=>{ const st=ZKData.getLeadStatus(l.rid); by[st]=(by[st]||0)+1; });
+  document.getElementById('kpis').innerHTML = [['Total leads',leads.length],['Qualified+',(by['Qualified']||0)+(by['Contacted']||0)+(by['Converted']||0)],['Converted',by['Converted']||0]].map(([l,v])=>'<div class="zk-card" style="margin:0"><div class="zk-label" style="margin-top:0">'+l+'</div><div style="font-size:26px;font-weight:800;color:#fff">'+v+'</div></div>').join('');
+  const box=document.getElementById('rows');
+  box.innerHTML = leads.length ? leads.map(l=>{ const st=ZKData.getLeadStatus(l.rid);
+    return '<tr><td><b>'+esc(l.lead.name||'—')+'</b></td><td>'+esc(l.lead.mobile||'—')+'</td><td>'+esc(l.lead.email||'—')+'</td><td>'+esc(l.lead.city||'—')+'</td><td>'+esc(l.surveyName)+'</td><td><span class="zk-chip c">'+esc(l.source)+'</span></td><td>'+fmt(l.at)+'</td><td><select class="zk-select" style="padding:5px 8px;font-size:12px" onchange="setSt(\''+l.rid+'\',this.value)">'+ZKData.LEAD_STATUSES.map(s=>'<option'+(s===st?' selected':'')+'>'+s+'</option>').join('')+'</select></td></tr>'; }).join('') : '<tr><td colspan="8" class="zk-empty">No leads yet. They appear once a respondent answers a Lead Capture question and ticks consent.</td></tr>';
+}
+function toCsv(rows,headers){ const esc2=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"'; return [headers.map(esc2).join(',')].concat(rows.map(r=>headers.map(h=>esc2(r[h])).join(','))).join('\n'); }
+function download(name,text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'})); a.download=name; a.click(); }
+document.getElementById('btnExport').onclick=()=>{
+  const leads=leadsOf(sel.value); if(!leads.length){ toast('No leads to export.'); return; }
+  const rows=leads.map(l=>({Name:l.lead.name||'',Mobile:l.lead.mobile||'',Email:l.lead.email||'',City:l.lead.city||'',Survey:l.surveyName,Source:l.source,When:new Date(l.at).toISOString(),Status:ZKData.getLeadStatus(l.rid)}));
+  download('zksurvey-leads.csv', toCsv(rows, Object.keys(rows[0])));
+  toast('Exported '+rows.length+' lead(s).');
+};
+function setSt(rid,st){ ZKData.setLeadStatus(rid,st); render(); toast('Status updated to '+st); }
+render();
+</script><script src="../js/shell.js"></script></body></html>

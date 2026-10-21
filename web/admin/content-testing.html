@@ -1,0 +1,47 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Content Testing — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Admin</div><h1>Content &amp; Creative Testing</h1></div><select class="zk-select" id="surveySel" style="width:auto;min-width:260px"></select></div>
+<div class="zk-card"><h3>Variant preference from survey responses</h3><p class="sub">Any message/creative-style question in this survey, ranked by how many respondents picked each option. This measures stated preference, not live ad performance (views, clicks, CTR) — that arrives with the ad-platform integrations in Phase 8.</p><div id="msgQs"></div></div>
+<div class="zk-card"><div class="zk-head"><div><h3>Creative tests</h3><p class="sub">Track variants you're running outside the survey itself — ad creative, landing pages, subject lines.</p></div><button class="zk-btn primary" id="btnAddTest">+ Add creative test</button></div><div id="tests"></div></div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const esc=ZKData.esc, list=ZKData.getList();
+const sel=document.getElementById('surveySel');
+sel.innerHTML=list.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('');
+const withResp=list.find(s=>ZKData.getResponses(s.id).length); if(withResp) sel.value=withResp.id;
+sel.onchange=render;
+const STATUS=['Testing','Winner','Retired'];
+function bar(label,pct,meta){ return '<div class="bar-row"><div class="bar-meta"><span>'+esc(label)+'</span><b>'+meta+'</b></div><div class="bar-bg"><div class="bar-fill" style="width:'+Math.max(pct,3)+'%"></div></div></div>'; }
+function render(){
+  const id=sel.value, qs=ZKData.messageQuestions(id);
+  document.getElementById('msgQs').innerHTML = qs.length ? qs.map(q=>'<div style="margin-bottom:18px"><div class="zk-label" style="margin-top:0">'+esc(q.text)+' · '+q.answered+' answered</div>'+q.options.map(o=>bar(o.text,o.pct,o.n+' · '+o.pct+'%')).join('')+'</div>').join('') : '<div class="zk-empty">No message or creative-concept question found in this survey. Add one in the Survey Builder (question text containing “message” or “appeal” is picked up automatically).</div>';
+  renderTests(id);
+}
+function renderTests(id){
+  const tests=ZKData.getCreativeTests(id);
+  document.getElementById('tests').innerHTML = tests.length ? tests.map(t=>'<div class="zk-item"><div class="zk-idx">'+esc((t.channel||'—').slice(0,2).toUpperCase())+'</div><div><div class="t">'+esc(t.name)+'</div><div class="m"><span class="zk-chip '+(t.status==='Winner'?'g':t.status==='Retired'?'r':'o')+'">'+esc(t.status)+'</span>'+(t.channel?esc(t.channel)+' · ':'')+(t.notes?esc(t.notes):'')+'</div></div><div class="acts"><button class="zk-btn sm" onclick="editTest(\''+id+'\',\''+t.id+'\')">Edit</button><button class="zk-btn sm danger" onclick="delTest(\''+id+'\',\''+t.id+'\')">Delete</button></div></div>').join('') : '<div class="zk-empty">No creative tests logged yet.</div>';
+}
+function testForm(t){ t=t||{name:'',channel:'',status:'Testing',notes:''};
+  return '<label class="zk-label" style="margin-top:0">Variant name *</label><input class="zk-input" id="ft_n" value="'+esc(t.name)+'" placeholder="e.g. Message B — Instagram carousel"><div class="zk-grid2"><div><label class="zk-label">Channel</label><input class="zk-input" id="ft_c" value="'+esc(t.channel)+'"></div><div><label class="zk-label">Status</label><select class="zk-select" id="ft_s">'+STATUS.map(s=>'<option'+(s===t.status?' selected':'')+'>'+s+'</option>').join('')+'</select></div></div><label class="zk-label">Notes</label><textarea class="zk-textarea" id="ft_notes" rows="2">'+esc(t.notes)+'</textarea>'; }
+document.getElementById('btnAddTest').onclick=()=>{ const id=sel.value; zkModal('Add creative test',testForm(),()=>{ const n=document.getElementById('ft_n').value.trim(); if(!n){toast('Variant name is required.');return false;} ZKData.addCreativeTest(id,{name:n,channel:document.getElementById('ft_c').value.trim(),status:document.getElementById('ft_s').value,notes:document.getElementById('ft_notes').value.trim()}); renderTests(id); toast('Creative test added.'); },'Add'); };
+function editTest(id,tid){ const t=ZKData.getCreativeTests(id).find(x=>x.id===tid); zkModal('Edit creative test',testForm(t),()=>{ const n=document.getElementById('ft_n').value.trim(); if(!n){toast('Variant name is required.');return false;} ZKData.updateCreativeTest(id,tid,{name:n,channel:document.getElementById('ft_c').value.trim(),status:document.getElementById('ft_s').value,notes:document.getElementById('ft_notes').value.trim()}); renderTests(id); toast('Creative test updated.'); },'Save changes'); }
+function delTest(id,tid){ zkConfirm('Delete this creative test?',()=>{ ZKData.deleteCreativeTest(id,tid); renderTests(id); toast('Creative test deleted.'); }); }
+render();
+</script><script src="../js/shell.js"></script></body></html>

@@ -1,0 +1,83 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Platform Console — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Super Admin</div><h1>Platform Console</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
+
+<div class="zk-note" style="margin-bottom:16px"><b>Super Admin console.</b> Accounts, usage, payments and support messages are read live from the PostgreSQL database. Actions here are written to the audit log. “Est. monthly revenue” is the sum of plan prices for active paid accounts; “Collected” is the sum of verified payments (incl. GST).</div>
+<div id="kpis" class="zk-grid3" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:16px"></div>
+<div class="zk-card"><div class="zk-row"><h3>Accounts</h3></div><div class="table-wrap"><table class="table" id="acc"></table></div></div>
+<div class="zk-grid2" style="margin-top:16px;align-items:start"><div class="zk-card"><div class="zk-row"><h3>Plans</h3></div><div class="table-wrap"><table class="table" id="pl"></table></div></div>
+<div class="zk-card"><h3>Recent activity</h3><div id="ev" class="muted">Nothing yet.</div></div></div>
+<div class="zk-card" style="margin-top:16px"><div class="zk-row"><h3>Orders &amp; Payments (UPI &amp; Razorpay)</h3></div><div class="table-wrap"><table class="table" id="ord_table"></table></div></div>
+<div class="zk-card" style="margin-top:16px"><div class="zk-row"><h3>Support messages</h3></div><div id="tk" class="muted">No messages.</div></div>
+
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const surveyOpts=sel=>ZKData.getList().map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+const inr=p=>'₹'+Number(p).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const DIST_KEY='zk_dist_v12';
+function distGet(id){ return (ZKStore.get(DIST_KEY,{})[id])||{poster:{},channels:{}}; }
+function distMark(id,kind,key){ const all=ZKStore.get(DIST_KEY,{}); const d=all[id]||{poster:{},channels:{}}; d[kind][key]=Date.now(); all[id]=d; ZKStore.set(DIST_KEY,all); }
+
+let OV={metrics:{revenue_paise:0,paid_orders:0,mail_errors:0},tickets:[],orders:[]};
+function pull(){ const r=ZKApi.call('GET','/admin/overview'); if(r.status===200){ OV=r.data; ZKApi.state.admin={accounts:r.data.accounts,events:r.data.events}; } }
+function draw(){ pull(); const P=ZKAuth.plans(), A=ZKAuth.accounts().filter(a=>a.role!=='superadmin');
+  const mrr=A.filter(a=>a.status==='active').reduce((s,a)=>s+((P.find(p=>p.id===a.plan)||{price:0}).price),0);
+  let sv=0,rs=0; A.forEach(a=>{ const u=ZKAuth.usageOf(a); sv+=u.surveys; rs+=u.responses; });
+  const k=(v,l)=>'<div class="zk-card"><div style="font-size:28px;font-weight:800;color:#fff">'+v+'</div><div class="muted" style="font-size:13px">'+l+'</div></div>';
+  ZG('kpis').innerHTML=k(A.length,'Customer accounts')+k(A.filter(a=>a.plan!=='free').length,'On a paid plan')+k('₹'+mrr.toLocaleString('en-IN'),'Est. monthly revenue')+k('₹'+(OV.metrics.revenue_paise/100).toLocaleString('en-IN'),'Collected ('+OV.metrics.paid_orders+' payments)')+k(sv,'Surveys created')+k(rs,'Real responses')+(OV.metrics.mail_errors?k(OV.metrics.mail_errors,'Emails failed to send'):'');
+  ZG('acc').innerHTML='<thead><tr><th>Customer</th><th>Email</th><th>Plan</th><th>Surveys</th><th>Responses</th><th>Joined</th><th>Status</th><th></th></tr></thead><tbody>'+(A.length?A.map(a=>{ const u=ZKAuth.usageOf(a); return '<tr><td><b>'+esc(a.company)+'</b><div class="muted" style="font-size:12px">'+esc(a.name)+'</div></td><td>'+esc(a.email)+'</td><td><select class="zk-select" data-pl="'+a.id+'" aria-label="Plan for '+esc(a.company)+'" style="min-width:110px">'+P.map(p=>'<option value="'+p.id+'"'+(p.id===a.plan?' selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select></td><td>'+u.surveys+'</td><td>'+u.responses+'</td><td>'+fmtD(a.createdAt)+(a.emailVerified?'':'<div class="muted" style="font-size:11px">email unverified</div>')+'</td><td><span class="zk-chip '+(a.status==='active'?'g':'r')+'">'+a.status+'</span></td><td style="white-space:nowrap"><button class="zk-btn sm" data-sus="'+a.id+'">'+(a.status==='active'?'Suspend':'Activate')+'</button> <button class="zk-btn sm" data-rl="'+a.id+'">Send reset link</button> <button class="zk-btn sm danger" data-del="'+a.id+'">Delete</button></td></tr>'; }).join(''):'<tr><td colspan="8" class="muted">No customer accounts yet. Register one from the public site.</td></tr>')+'</tbody>';
+  document.querySelectorAll('[data-pl]').forEach(s=>s.onchange=()=>{ ZKAuth.updateAccount(s.dataset.pl,{plan:s.value}); draw(); toast('Plan changed.'); });
+  document.querySelectorAll('[data-sus]').forEach(b=>b.onclick=()=>{ const a=ZKAuth.accounts().find(x=>x.id===b.dataset.sus); ZKAuth.updateAccount(a.id,{status:a.status==='active'?'suspended':'active'}); draw(); });
+  document.querySelectorAll('[data-rl]').forEach(b=>b.onclick=()=>{ const r=ZKApi.call('POST','/admin/accounts/'+b.dataset.rl+'/reset-link',{}); toast(r.status===200?'Reset link emailed to the account owner.':(r.data.message||'Could not send.')); });
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>zkConfirm('Delete this account and ALL of its surveys and responses? This cannot be undone.',()=>{ ZKAuth.deleteAccount(b.dataset.del); draw(); toast('Account deleted.'); }));
+  ZG('pl').innerHTML='<thead><tr><th>Plan</th><th>₹/mo</th><th>Surveys</th><th>Responses</th><th>Ads brief</th><th></th></tr></thead><tbody>'+P.map(p=>'<tr><td><b>'+esc(p.name)+'</b></td><td>'+p.price+'</td><td>'+p.surveys+'</td><td>'+p.responses+'</td><td>'+(p.ads?'Yes':'No')+'</td><td><button class="zk-btn sm" data-ep="'+p.id+'">Edit</button></td></tr>').join('')+'</tbody>';
+  document.querySelectorAll('[data-ep]').forEach(b=>b.onclick=()=>editPlan(b.dataset.ep));
+  const ev=ZKAuth.events(); ZG('ev').innerHTML=ev.length?ev.slice(0,12).map(e=>'<div style="padding:7px 0;border-top:1px solid var(--line);font-size:13px"><span style="color:#fff">'+esc(e.text)+'</span><div class="muted" style="font-size:11px">'+fmtD(e.at)+' · '+esc(e.type)+'</div></div>').join(''):'Nothing yet.';
+
+  const ords = OV.orders || [];
+  ZG('ord_table').innerHTML = '<thead><tr><th>Date</th><th>Customer</th><th>Plan</th><th>Amount</th><th>Method</th><th>UTR / Payment ID</th><th>Status</th><th></th></tr></thead><tbody>'
+    + (ords.length ? ords.map(o => {
+      const isPending = o.status === 'pending_verification';
+      const chipClass = o.status === 'paid' ? 'g' : (o.status === 'pending_verification' ? 'o' : (o.status === 'failed' ? 'r' : 'b'));
+      return '<tr><td>' + fmtD(o.at) + '</td><td><b>' + esc(o.name || o.email) + '</b><div class="muted" style="font-size:11px">' + esc(o.email) + '</div></td>'
+        + '<td>' + esc(o.plan_id) + ' (' + o.months + 'm)</td><td>' + inr(o.total_paise / 100) + '</td><td><span class="zk-chip">' + esc(o.gateway) + '</span></td>'
+        + '<td style="font-family:monospace;font-size:12px">' + esc(o.gateway_payment_id || '—') + '</td>'
+        + '<td><span class="zk-chip ' + chipClass + '">' + esc(o.status) + '</span></td>'
+        + '<td>' + (isPending ? '<button class="zk-btn sm primary" data-ap="' + o.id + '">Approve &amp; Activate</button>' : '') + '</td></tr>';
+    }).join('') : '<tr><td colspan="8" class="muted">No orders yet.</td></tr>') + '</tbody>';
+
+  document.querySelectorAll('[data-ap]').forEach(b => b.onclick = () => {
+    const res = ZKApi.call('POST', '/admin/orders/' + b.dataset.ap + '/approve', {});
+    if (res.status === 200) { toast('Order approved and plan activated!'); draw(); }
+    else toast(res.data.message || 'Could not approve order.');
+  });
+}
+function editPlan(id){ const P=ZKAuth.plans(), p=P.find(x=>x.id===id); const n=(i,l,v)=>'<label class="zk-label" for="'+i+'">'+l+'</label><input class="zk-input" id="'+i+'" type="number" min="0" value="'+v+'">';
+  zkModal('Edit '+esc(p.name)+' plan',n('pp','Price (₹ per month)',p.price)+n('ps','Surveys',p.surveys)+n('pr','Responses',p.responses)+n('pt','Team seats',p.seats)+'<label style="display:flex;gap:8px;margin-top:12px"><input type="checkbox" id="pa"'+(p.ads?' checked':'')+'> Includes Meta Ads brief</label>',()=>{
+    const v=i=>parseInt(ZG(i).value,10); if([v('pp'),v('ps'),v('pr'),v('pt')].some(x=>isNaN(x)||x<0)||v('ps')<1||v('pr')<1){ toast('Enter valid numbers (surveys and responses at least 1).'); return false; }
+    Object.assign(p,{price:v('pp'),surveys:v('ps'),responses:v('pr'),seats:v('pt'),ads:ZG('pa').checked}); const er=ZKAuth.savePlans(P); draw(); toast(er||'Plan saved.'); }); }
+function tickets(){ const T=OV.tickets||[]; ZG('tk').innerHTML=T.length?'<div class="table-wrap"><table class="table"><thead><tr><th>When</th><th>From</th><th>Subject</th><th>Message</th><th></th></tr></thead><tbody>'+T.map(t=>'<tr><td>'+fmtD(t.at)+'</td><td>'+esc(t.name)+'<div class="muted" style="font-size:12px">'+esc(t.email)+'</div></td><td>'+esc(t.subject)+'</td><td style="max-width:360px;overflow-wrap:anywhere">'+esc(t.message)+'</td><td><button class="zk-btn sm" data-tk="'+t.id+'" data-st="'+(t.status==='open'?'closed':'open')+'">'+(t.status==='open'?'Close':'Reopen')+'</button></td></tr>').join('')+'</tbody></table></div>':'No messages.';
+  document.querySelectorAll('[data-tk]').forEach(b=>b.onclick=()=>{ ZKApi.call('PATCH','/admin/tickets/'+b.dataset.tk,{status:b.dataset.st}); pull(); tickets(); }); }
+draw(); tickets();
+</script><script src="../js/shell.js"></script></body></html>

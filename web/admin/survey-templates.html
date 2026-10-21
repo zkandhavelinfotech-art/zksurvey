@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Survey Templates — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Surveys</div><h1>Survey Templates</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="zk-btn" href="questions.html">Question Bank</a></div></div>
+<p class="muted" style="margin:-8px 0 16px">Start a new survey from a ready template. Templates create a draft you can edit freely — nothing is shared until you publish.</p><div id="tpls" class="zk-grid3" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))"></div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const surveyOpts=sel=>ZKData.getList().map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+
+const TL=ZKData.TEMPLATES.filter(t=>!(t.sample && ZKAuth.isCustomerNs()));
+ZG('tpls').innerHTML=TL.map(t=>{ const d=t.make('x',{}); return '<div class="zk-card"><span class="zk-chip '+(t.sample?'o':'c')+'">'+esc(t.kind)+'</span><h3 style="margin-top:10px">'+esc(t.name)+'</h3><p class="sub">'+esc(t.desc)+'</p><div class="muted" style="font-size:12px;margin-bottom:12px">'+d.sections.length+' section(s) · '+d.questions.length+' question(s) · '+d.rules.length+' logic rule(s)'+((d.segments||[]).length?' · '+d.segments.length+' segments':'')+'</div><button class="zk-btn primary" data-t="'+t.id+'">Use this template</button></div>'; }).join('');
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>zkCreateSurveyModal(b.dataset.t,id=>{ location.href='survey-builder.html?survey='+id; }));
+</script><script src="../js/shell.js"></script></body></html>

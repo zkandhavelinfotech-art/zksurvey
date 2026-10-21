@@ -1,0 +1,50 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reports — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"><style>@media print{.sidebar,.page-head,.zk-note,#controls{display:none!important}.main{margin:0!important;width:100%!important}body{background:#fff!important;color:#000!important}.zk-card{border-color:#ccc!important;background:#fff!important}.bar-fill{background:#555!important}.insight{background:#f3f3f3!important;color:#000!important}}</style></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Admin</div><h1>Reports</h1></div></div>
+<div class="zk-card" id="controls"><h3>Generate a report</h3><p class="sub">Builds a customer-ready report from a survey's real responses — the same numbers as Analytics, laid out to read or print. PDF/PPT export is a Phase 9 item; use your browser's Print → Save as PDF for now.</p>
+ <div class="zk-grid2"><div><label class="zk-label" style="margin-top:0">Survey</label><select class="zk-select" id="surveySel"></select></div><div><label class="zk-label" style="margin-top:0">Report type</label><select class="zk-select" id="typeSel"><option>Pre-Launch Report</option><option>Market Research Report</option><option>Survey Report</option><option>Customer Insight Report</option><option>Product Validation Report</option></select></div></div>
+ <div style="display:flex;gap:8px;margin-top:14px"><button class="zk-btn primary" id="btnGen">Generate</button><button class="zk-btn" id="btnPrint">Print / Save as PDF</button></div></div>
+<div id="empty" class="zk-empty" style="display:none">This survey has no responses yet — pick a different one.</div>
+<div id="report"></div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const esc=ZKData.esc, list=ZKData.getList();
+const sel=document.getElementById('surveySel');
+sel.innerHTML=list.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('');
+const withResp=list.find(s=>ZKData.getResponses(s.id).length); if(withResp) sel.value=withResp.id;
+function bar(label,pct,meta){ return '<div class="bar-row"><div class="bar-meta"><span>'+esc(label)+'</span><b>'+meta+'</b></div><div class="bar-bg"><div class="bar-fill" style="width:'+Math.max(pct,3)+'%"></div></div></div>'; }
+function gen(){
+  const id=sel.value, a=ZKData.analyze(id), type=document.getElementById('typeSel').value;
+  document.getElementById('empty').style.display = a.responses? 'none':'block';
+  const box=document.getElementById('report');
+  if(!a.responses){ box.innerHTML=''; return; }
+  const withOpts=a.questions.filter(q=>q.options.length&&q.answered);
+  const wellSampled=withOpts.filter(q=>q.answered>=a.responses*0.5);
+  const top=(wellSampled.length?wellSampled:withOpts).slice().sort((x,y)=>(y.options[0]?y.options[0].pct:0)-(x.options[0]?x.options[0].pct:0)).slice(0,4);
+  box.innerHTML = '<div class="zk-card"><h3>'+esc(type)+' — '+esc(a.def.details.title)+'</h3><p class="sub">'+esc(a.def.details.customer||'')+(a.def.details.product?' · '+esc(a.def.details.product):'')+' · Generated '+new Date().toLocaleDateString()+'</p>'
+    +'<div class="stat-grid"><div class="stat"><div class="label">RESPONSES</div><div class="num">'+a.responses+'</div></div><div class="stat"><div class="label">COMPLETION RATE</div><div class="num">'+a.completion+'%</div></div><div class="stat"><div class="label">LEADS CAPTURED</div><div class="num">'+a.leads+'</div></div><div class="stat"><div class="label">TOP SOURCE</div><div class="num" style="font-size:20px">'+(a.sources[0]?esc(a.sources[0].source):'—')+'</div></div></div></div>'
+    +'<div class="zk-card"><h3>Key findings</h3>'+(top.length?top.map(q=>'<div class="insight"><b>'+q.options[0].pct+'% — '+esc(q.options[0].text)+'</b>'+esc(q.text)+'</div>').join(''):'<p class="muted">Not enough answered choice questions yet.</p>')+'</div>'
+    +withOpts.map(q=>'<div class="zk-card"><h3>'+esc(q.text)+'</h3><p class="sub">'+esc(q.section)+' · '+q.answered+' answered</p>'+q.options.map(o=>bar(o.text,o.pct,o.n+' · '+o.pct+'%')).join('')+'</div>').join('')
+    +'<div class="zk-card"><h3>Response sources</h3>'+a.sources.map(s=>bar(s.source,s.pct,s.n+' · '+s.pct+'%')).join('')+'</div>';
+}
+document.getElementById('btnGen').onclick=gen;
+document.getElementById('btnPrint').onclick=()=>window.print();
+gen();
+</script><script src="../js/shell.js"></script></body></html>

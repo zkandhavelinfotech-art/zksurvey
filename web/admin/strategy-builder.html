@@ -1,0 +1,71 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Growth Strategy Builder — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Admin</div><h1>Growth Strategy Builder</h1></div><select class="zk-select" id="surveySel" style="width:auto;min-width:260px"></select></div>
+<p class="muted" style="margin:-8px 0 18px">Turns a survey's real Analytics signals into a 30 / 60 / 90-day launch plan. The first few activities are auto-suggested from the data below; add, edit or delete any of them.</p>
+<div id="empty" class="zk-empty" style="display:none">This survey has no responses yet, so there's no signal to build a plan from. Pick a different survey, or add activities manually below.</div>
+<div class="zk-grid3" id="signals" style="margin-bottom:18px"></div>
+<div id="buckets"></div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const esc=ZKData.esc, list=ZKData.getList();
+const sel=document.getElementById('surveySel');
+sel.innerHTML=list.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('');
+const withResp=list.find(s=>ZKData.getResponses(s.id).length); if(withResp) sel.value=withResp.id;
+sel.onchange=render;
+const BUCKETS=[['30','First 30 Days — Launch'],['60','Days 31–60 — Optimise & Acquire'],['90','Days 61–90 — Scale & Grow']];
+const STATUS=['Planned','In progress','Done'];
+function statCard(l,v,sub){ return '<div class="zk-card" style="margin:0"><div class="zk-label" style="margin-top:0">'+l+'</div><div style="font-size:20px;font-weight:800;color:#fff">'+v+'</div>'+(sub?'<div class="muted" style="font-size:12px;margin-top:3px">'+sub+'</div>':'')+'</div>'; }
+function render(){
+  const id=sel.value, a=ZKData.analyze(id);
+  document.getElementById('empty').style.display = a.responses? 'none':'block';
+  ZKData.autoSuggestStrategy(id);
+  const withOpts=a.questions.filter(q=>q.options.length&&q.answered);
+  const wellSampled=withOpts.filter(q=>q.answered>=a.responses*0.5);
+  const age=wellSampled.find(q=>/age|group/i.test(q.text));
+  const pain=(wellSampled.filter(q=>q.type==='Multiple Choice').sort((x,y)=>(y.options[0]?y.options[0].pct:0)-(x.options[0]?x.options[0].pct:0))[0])||wellSampled[0];
+  const msg=wellSampled.find(q=>/message|messaging|appeal/i.test(q.text));
+  document.getElementById('signals').innerHTML = a.responses ?
+      statCard('Audience', age?esc(age.options[0].text):'—', age?age.options[0].pct+'% of respondents':'No profile question found')
+    + statCard('Core problem', pain?esc(pain.options[0].text):'—', pain?pain.options[0].pct+'% selected this':'')
+    + statCard('Core message', msg?esc(msg.options[0].text):'—', msg?msg.options[0].pct+'% preferred it':'No message-testing question found')
+    : '';
+  renderBuckets(id);
+}
+function renderBuckets(id){
+  const s=ZKData.getStrategy(id);
+  document.getElementById('buckets').innerHTML = BUCKETS.map(([key,title])=>{
+    const items=s[key];
+    return '<div class="zk-card"><div class="zk-head"><div><h3>'+title+'</h3></div><button class="zk-btn primary sm" onclick="addAct(\''+id+'\',\''+key+'\')">+ Add activity</button></div>'
+      + (items.length ? items.map(act=>'<div class="zk-item" style="grid-template-columns:auto 1fr auto"><div class="zk-idx">'+esc(act.channel||'—').slice(0,2).toUpperCase()+'</div><div><div class="t">'+esc(act.task)+'</div><div class="m"><span class="zk-chip '+(act.status==='Done'?'g':act.status==='In progress'?'c':'o')+'">'+esc(act.status)+'</span>'+(act.objective?esc(act.objective)+' · ':'')+(act.owner?esc(act.owner)+' · ':'')+(act.kpi?'KPI: '+esc(act.kpi):'')+(act.budget?' · Budget: '+esc(act.budget):'')+(act.start?' · '+esc(act.start)+(act.end?'–'+esc(act.end):''):'')+'</div></div><div class="acts"><button class="zk-btn sm" onclick="editAct(\''+id+'\',\''+key+'\',\''+act.id+'\')">Edit</button><button class="zk-btn sm danger" onclick="delAct(\''+id+'\',\''+key+'\',\''+act.id+'\')">Delete</button></div></div>').join('')
+        : '<div class="zk-empty">No activities yet in this window.</div>') + '</div>';
+  }).join('');
+}
+function actForm(a){ a=a||{objective:'',channel:'',task:'',owner:'',start:'',end:'',budget:'',kpi:'',status:'Planned'};
+  return '<label class="zk-label" style="margin-top:0">Task *</label><textarea class="zk-textarea" id="fa_task" rows="2">'+esc(a.task)+'</textarea>'
+   + '<div class="zk-grid2"><div><label class="zk-label">Objective</label><input class="zk-input" id="fa_obj" value="'+esc(a.objective)+'"></div><div><label class="zk-label">Channel</label><input class="zk-input" id="fa_ch" value="'+esc(a.channel)+'"></div></div>'
+   + '<div class="zk-grid2"><div><label class="zk-label">Owner</label><input class="zk-input" id="fa_owner" value="'+esc(a.owner)+'"></div><div><label class="zk-label">KPI</label><input class="zk-input" id="fa_kpi" value="'+esc(a.kpi)+'"></div></div>'
+   + '<div class="zk-grid2"><div><label class="zk-label">Start date</label><input class="zk-input" type="date" id="fa_start" value="'+esc(a.start)+'"></div><div><label class="zk-label">End date</label><input class="zk-input" type="date" id="fa_end" value="'+esc(a.end)+'"></div></div>'
+   + '<div class="zk-grid2"><div><label class="zk-label">Budget</label><input class="zk-input" id="fa_budget" value="'+esc(a.budget)+'" placeholder="e.g. ₹25,000"></div><div><label class="zk-label">Status</label><select class="zk-select" id="fa_status">'+STATUS.map(st=>'<option'+(st===a.status?' selected':'')+'>'+st+'</option>').join('')+'</select></div></div>'; }
+function readAct(){ return {objective:document.getElementById('fa_obj').value.trim(), channel:document.getElementById('fa_ch').value.trim(), task:document.getElementById('fa_task').value.trim(), owner:document.getElementById('fa_owner').value.trim(), start:document.getElementById('fa_start').value, end:document.getElementById('fa_end').value, budget:document.getElementById('fa_budget').value.trim(), kpi:document.getElementById('fa_kpi').value.trim(), status:document.getElementById('fa_status').value}; }
+function addAct(id,key){ zkModal('Add activity',actForm(),()=>{ const v=readAct(); if(!v.task){ toast('Task is required.'); return false; } ZKData.addActivity(id,key,v); renderBuckets(id); toast('Activity added.'); },'Add'); }
+function editAct(id,key,actId){ const a=ZKData.getStrategy(id)[key].find(x=>x.id===actId); zkModal('Edit activity',actForm(a),()=>{ const v=readAct(); if(!v.task){ toast('Task is required.'); return false; } ZKData.updateActivity(id,key,actId,v); renderBuckets(id); toast('Activity updated.'); },'Save changes'); }
+function delAct(id,key,actId){ zkConfirm('Delete this activity?',()=>{ ZKData.deleteActivity(id,key,actId); renderBuckets(id); toast('Activity deleted.'); }); }
+render();
+</script><script src="../js/shell.js"></script></body></html>

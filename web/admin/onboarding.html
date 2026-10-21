@@ -1,0 +1,52 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Get started — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Welcome</div><h1>Get started</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
+
+<div class="zk-card" style="max-width:720px"><h3>Welcome — let's set up your first survey</h3><p class="sub" id="needNote">Answer a few questions; ZKSurvey drafts the survey for you. You can edit everything afterwards.</p>
+<div id="errs" role="alert" aria-live="polite" style="color:#ffb4c0;font-size:14px"></div>
+<label class="zk-label" style="margin-top:0" for="ob_tpl">What do you want to find out?</label><select class="zk-select" id="ob_tpl"></select><p class="muted" id="ob_desc" style="font-size:13px"></p>
+<div id="cs_f"></div>
+<div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"><button class="zk-btn primary" id="go">Create my survey</button><a class="zk-btn" href="survey-templates.html" id="skip">Browse templates instead</a></div></div>
+
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const surveyOpts=sel=>ZKData.getList().map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+const DIST_KEY='zk_dist_v12';
+function distGet(id){ return (ZKStore.get(DIST_KEY,{})[id])||{poster:{},channels:{}}; }
+function distMark(id,kind,key){ const all=ZKStore.get(DIST_KEY,{}); const d=all[id]||{poster:{},channels:{}}; d[kind][key]=Date.now(); all[id]=d; ZKStore.set(DIST_KEY,all); }
+
+const acct=ZKAuth.current(); const T=ZKData.TEMPLATES.filter(t=>!(t.sample && ZKAuth.isCustomerNs()) && t.id!=='blank');
+const focusMap={'New product launch':'category','Software pre-launch':'launch','Market research':'category','Customer feedback':'nps','Event feedback':'event','Something else':'poll'};
+ZG('ob_tpl').innerHTML=T.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('');
+const want=focusMap[acct&&acct.focus]; if(want&&T.some(t=>t.id===want)) ZG('ob_tpl').value=want;
+function fill(){ const t=T.find(x=>x.id===ZG('ob_tpl').value); ZG('ob_desc').textContent=t.desc; ZG('cs_f').innerHTML=zkTplFieldsHtml(t.id); }
+ZG('ob_tpl').onchange=fill; fill();
+ZG('go').onclick=()=>{ const id=ZG('ob_tpl').value; const o=zkTplOpts(id); if(o.error){ ZG('errs').textContent=o.error; return; }
+  const t=T.find(x=>x.id===id); const title=(id==='category')?t.make('',o).details.title:((o.product?o.product+' — ':'')+t.name);
+  const sid=ZKData.createSurvey(title,id,o); if(!sid){ ZG('errs').textContent=ZKData.lastError(); return; }
+  ZKAuth.updateAccount(acct.id,{onboarded:true}); location.href='survey-builder.html?survey='+sid; };
+if(qp('need')) ZG('needNote').textContent='Create your first survey to unlock your dashboard, responses and analytics.';
+ZG('skip').onclick=()=>{ ZKAuth.updateAccount(acct.id,{onboarded:true}); };
+
+</script><script src="../js/shell.js"></script></body></html>

@@ -1,0 +1,56 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Admin</div><h1>Dashboard</h1></div><a class="zk-btn primary" href="survey-builder.html">+ New survey</a></div>
+<div class="tabs" id="tabs"></div>
+<div id="empty" class="zk-empty" style="display:none">This survey has no responses yet.</div>
+<div id="body">
+<div class="stat-grid" id="kpis"></div>
+<div class="two-col"><div class="panel"><h3>Response sources</h3><div id="sources"></div></div><div class="panel"><h3>Top consumer signals</h3><div id="signals"></div></div></div>
+<div class="two-col"><div class="panel"><h3 id="intentTitle">Key question</h3><div id="intent"></div></div><div class="panel"><h3>Recommended marketing message</h3><div id="message"></div></div></div>
+</div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const esc=ZKData.esc, list=ZKData.getList();
+const tabs=document.getElementById('tabs');
+let cur = (list.find(s=>ZKData.getResponses(s.id).length)||list[0]).id;
+function drawTabs(){ tabs.innerHTML=list.map(s=>'<span class="tab'+(s.id===cur?' active':'')+'" data-id="'+s.id+'">'+esc(s.name)+'</span>').join('');
+  tabs.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{ cur=t.dataset.id; drawTabs(); render(); }); }
+function bar(label,pct,meta){ return '<div class="bar-row"><div class="bar-meta"><span>'+esc(label)+'</span><b>'+meta+'</b></div><div class="bar-bg"><div class="bar-fill" style="width:'+Math.max(pct,3)+'%"></div></div></div>'; }
+function stat(l,v,sub){ return '<div class="stat"><div class="label">'+l.toUpperCase()+'</div><div class="num">'+v+'</div>'+(sub?'<div class="delta" style="color:#8f9bb0">'+sub+'</div>':'')+'</div>'; }
+function pickQ(a, re, fallbackIdx){ const m=a.questions.filter(q=>q.options.length&&q.answered); const hit=m.find(q=>re.test(q.text)); return hit || m[fallbackIdx] || null; }
+function render(){
+  const a=ZKData.analyze(cur);
+  document.getElementById('empty').style.display = a.responses? 'none':'block';
+  document.getElementById('body').style.display = a.responses? 'block':'none';
+  if(!a.responses) return;
+  document.getElementById('kpis').innerHTML = stat('Total responses', a.responses) + stat('Leads captured', a.leads) + stat('Completion rate', a.completion+'%') + stat('Top source', a.sources[0]?a.sources[0].source:'—', a.sources[0]?a.sources[0].pct+'% of responses':'');
+  document.getElementById('sources').innerHTML = a.sources.length ? a.sources.map(s=>bar(s.source,s.pct,s.n+' · '+s.pct+'%')).join('') : '<p class="muted">No source data yet.</p>';
+  const withOpts = a.questions.filter(q=>q.options.length && q.answered);
+  const wellSampled = withOpts.filter(q=>q.answered >= a.responses*0.5);
+  const pain = (wellSampled.filter(q=>q.type==='Multiple Choice').sort((x,y)=>(y.options[0]?y.options[0].pct:0)-(x.options[0]?x.options[0].pct:0))[0]) || wellSampled[0] || withOpts[0];
+  document.getElementById('signals').innerHTML = pain ? pain.options.slice(0,4).map(o=>'<div class="insight"><b>'+o.pct+'% — '+esc(o.text)+'</b>'+esc(pain.text)+'</div>').join('') : '<p class="muted">Not enough data yet.</p>';
+  const intent = pickQ(a,/intent|likely|interested/i,0);
+  document.getElementById('intentTitle').textContent = intent ? intent.text : 'Key question';
+  document.getElementById('intent').innerHTML = intent ? intent.options.map(o=>bar(o.text,o.pct,o.pct+'%')).join('') : '<p class="muted">No single-choice question to summarise yet.</p>';
+  const msg = pickQ(a,/message|messaging|appeal/i,1);
+  document.getElementById('message').innerHTML = msg ? '<div style="font-size:26px;font-weight:850;color:#fff">'+esc(msg.options[0].text)+'</div><p class="muted">'+msg.options[0].pct+'% selected this for “'+esc(msg.text)+'”. Validate with creative A/B testing during pre-launch.</p><a class="btn btn-secondary" href="insights.html">View AI Insights</a>' : '<p class="muted">Add a message-testing question to see a recommendation here.</p>';
+}
+drawTabs(); render();
+</script><script src="../js/shell.js"></script></body></html>

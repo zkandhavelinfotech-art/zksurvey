@@ -1,0 +1,69 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Question Bank — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Surveys</div><h1>Question Bank</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
+
+<p class="muted" style="margin:-8px 0 16px">Reusable question groups. Insert a whole group or one question into any survey. Groups are stored with the rest of your workspace data.</p>
+<div class="zk-split"><div class="zk-card"><div class="zk-row" style="margin-bottom:10px"><h3>Groups</h3><button class="zk-btn sm primary" id="addG">+ Group</button></div><div id="groups"></div></div>
+<div class="zk-card"><div class="zk-row" style="margin-bottom:10px"><div><h3 id="gt">—</h3><p class="sub" id="gs"></p></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="zk-btn sm" id="addQ">+ Question</button><button class="zk-btn sm" id="renG">Rename</button><button class="zk-btn sm danger" id="delG">Delete group</button><button class="zk-btn sm primary" id="useG">Insert group into survey…</button></div></div><div id="qs"></div></div></div>
+
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const surveyOpts=sel=>ZKData.getList().map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+
+let bank=ZKData.getBank(), cur=bank[0]&&bank[0].id;
+const save=()=>ZKData.saveBank(bank);
+const TYPES=ZKData.TYPES;
+function render(){
+  ZG('groups').innerHTML=bank.map(g=>'<button class="zk-btn" style="width:100%;justify-content:flex-start;margin-bottom:4px;'+(g.id===cur?'background:#1d2545;border-color:#8b7cff;':'')+'" data-g="'+g.id+'"><span>≡</span>&nbsp; '+esc(g.name)+' <span class="muted">('+g.questions.length+')</span></button>').join('')||'<div class="zk-empty">No groups yet.</div>';
+  document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{ cur=b.dataset.g; render(); });
+  const g=bank.find(x=>x.id===cur); ZG('gt').textContent=g?g.name:'No group selected'; ZG('gs').textContent=g?g.questions.length+' question(s)':'Create a group to begin';
+  ['addQ','renG','delG','useG'].forEach(i=>ZG(i).style.display=g?'':'none');
+  ZG('qs').innerHTML=g?(g.questions.length?g.questions.map((q,i)=>'<div style="border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px"><div class="zk-row"><div><b style="color:#fff">'+esc(q.text)+'</b><div class="muted" style="font-size:12px;margin-top:3px"><span class="zk-chip c">'+esc(q.type)+'</span> '+(q.options.length?esc(q.options.join(' · ')):'')+'</div></div><span style="white-space:nowrap"><button class="zk-btn sm" data-i="'+i+'">Use</button> <button class="zk-btn sm" data-ed="'+i+'">Edit</button> <button class="zk-btn sm danger" data-dq="'+i+'">✕</button></span></div></div>').join(''):'<div class="zk-empty">This group is empty. Add a question.</div>'):'';
+  document.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>insertInto([g.questions[+b.dataset.i]]));
+  document.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>qForm(g,+b.dataset.ed));
+  document.querySelectorAll('[data-dq]').forEach(b=>b.onclick=()=>zkConfirm('Remove this question from the group?',()=>{ g.questions.splice(+b.dataset.dq,1); save(); render(); }));
+}
+function qForm(g,i){ const q=i==null?{text:'',type:'Single Choice',options:[],required:false}:g.questions[i];
+  zkModal(i==null?'Add question to group':'Edit question','<label class="zk-label" style="margin-top:0">Question text *</label><input class="zk-input" id="b_t" value="'+esc(q.text)+'"><label class="zk-label">Type</label><select class="zk-select" id="b_y">'+TYPES.map(t=>'<option'+(t===q.type?' selected':'')+'>'+t+'</option>').join('')+'</select><label class="zk-label">Answer options (one per line, for choice questions)</label><textarea class="zk-textarea" id="b_o" rows="5">'+esc(q.options.join('\n'))+'</textarea>',()=>{
+    const t=ZG('b_t').value.trim(); if(!t){ toast('Enter the question text.'); return false; }
+    const rec=Object.assign({},q,{text:t,type:ZG('b_y').value,options:ZG('b_o').value.split('\n').map(x=>x.trim()).filter(Boolean)});
+    if(ZKData.CHOICE.includes(rec.type)&&rec.options.length<2){ toast('Choice questions need at least 2 options.'); return false; }
+    if(i==null) g.questions.push(rec); else g.questions[i]=rec; save(); render(); toast('Saved.'); }); }
+function insertInto(qs){
+  zkModal('Insert into survey','<label class="zk-label" style="margin-top:0">Survey</label><select class="zk-select" id="i_s">'+surveyOpts()+'</select><label class="zk-label">Section</label><select class="zk-select" id="i_c"></select><p class="muted" style="font-size:12px">'+qs.length+' question(s) will be added at the end of the section.</p>',()=>{
+    const sid=ZG('i_s').value, def=ZKData.getDef(sid); let sec=ZG('i_c').value; if(sec==='__new'){ sec=ZKStore.uid('sec'); def.sections.push({id:sec,name:'From question bank'}); }
+    qs.forEach(q=>def.questions.push(ZKData.bankToQuestion(q,sec)));
+    const order=def.sections.map(s=>s.id); def.questions=def.questions.map((q,k)=>[q,k]).sort((a,b)=>(order.indexOf(a[0].sectionId)-order.indexOf(b[0].sectionId))||(a[1]-b[1])).map(x=>x[0]);
+    ZKData.saveDef(sid,def); toast(qs.length+' question(s) added to the survey.'); },'Insert');
+  const fill=()=>{ const def=ZKData.getDef(ZG('i_s').value); ZG('i_c').innerHTML=def.sections.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('')+'<option value="__new">+ New section</option>'; };
+  ZG('i_s').onchange=fill; fill();
+}
+ZG('addG').onclick=()=>zkModal('New group','<label class="zk-label" style="margin-top:0">Group name *</label><input class="zk-input" id="g_n">',()=>{ const n=ZG('g_n').value.trim(); if(!n){ toast('Enter a name.'); return false; } const g={id:ZKStore.uid('bg'),name:n,questions:[]}; bank.push(g); cur=g.id; save(); render(); });
+ZG('renG').onclick=()=>{ const g=bank.find(x=>x.id===cur); zkModal('Rename group','<input class="zk-input" id="g_n" value="'+esc(g.name)+'">',()=>{ const n=ZG('g_n').value.trim(); if(!n) return false; g.name=n; save(); render(); }); };
+ZG('delG').onclick=()=>zkConfirm('Delete this group and its questions? Surveys that already used them are not changed.',()=>{ bank=bank.filter(x=>x.id!==cur); save(); cur=bank[0]&&bank[0].id; render(); });
+ZG('addQ').onclick=()=>qForm(bank.find(x=>x.id===cur),null);
+ZG('useG').onclick=()=>insertInto(bank.find(x=>x.id===cur).questions);
+render();
+
+</script><script src="../js/shell.js"></script></body></html>

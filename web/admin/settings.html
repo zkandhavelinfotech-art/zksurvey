@@ -1,0 +1,65 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Settings — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Administration</div><h1>Settings</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
+
+<div class="zk-card" id="acctCard" style="margin-bottom:16px"><h3>Your account</h3><p class="sub">Sign-in details for this workspace.</p>
+<div class="zk-grid2"><div><label class="zk-label" style="margin-top:0" for="ac_n">Name</label><input class="zk-input" id="ac_n"></div><div><label class="zk-label" style="margin-top:0" for="ac_e">Email</label><input class="zk-input" id="ac_e" disabled></div></div>
+<label class="zk-label" for="ac_c">Company or brand</label><input class="zk-input" id="ac_c"><div style="margin-top:12px"><button class="zk-btn primary" id="ac_s">Save account</button></div>
+<h3 style="margin-top:22px;font-size:15px">Change password</h3><div class="zk-grid2"><div><label class="zk-label" for="pw_o">Current password</label><input class="zk-input" id="pw_o" type="password" autocomplete="current-password"></div><div><label class="zk-label" for="pw_n">New password</label><input class="zk-input" id="pw_n" type="password" autocomplete="new-password"></div></div><div id="pw_m" role="alert" style="font-size:13px;margin-top:8px"></div><div style="margin-top:10px"><button class="zk-btn" id="pw_s">Change password</button></div></div>
+<div class="zk-grid2" style="align-items:start">
+<div class="zk-card"><h3>Workspace</h3><p class="sub">Saved to your account and used as defaults.</p>
+<label class="zk-label" style="margin-top:0">Organisation</label><input class="zk-input" id="s_w">
+<div class="zk-grid2"><div><label class="zk-label">Default market</label><input class="zk-input" id="s_m"></div><div><label class="zk-label">Default language</label><select class="zk-select" id="s_l"><option>English</option><option>English + Tamil</option><option>Tamil</option><option>Hindi</option></select></div></div>
+<div class="zk-grid2"><div><label class="zk-label">Currency</label><select class="zk-select" id="s_c"><option>INR (₹)</option><option>USD ($)</option><option>EUR (€)</option></select></div><div><label class="zk-label">Data retention (months)</label><input type="number" min="1" class="zk-input" id="s_r"></div></div>
+<label class="zk-label">Default consent text (shown with lead capture)</label><textarea class="zk-textarea" id="s_t" rows="3"></textarea>
+<div style="margin-top:14px"><button class="zk-btn primary" id="save">Save settings</button></div></div>
+<div class="zk-card"><h3>Notifications</h3><p class="sub">In-app notifications. Email and WhatsApp delivery arrive in Phase 8.</p>
+<label style="display:flex;gap:10px;align-items:center;margin:8px 0"><input type="checkbox" id="n_l"> New lead captured</label>
+<label style="display:flex;gap:10px;align-items:center;margin:8px 0"><input type="checkbox" id="n_m"> Response milestone reached</label>
+<div style="margin-left:28px"><label class="zk-label" style="margin-top:0">Milestone every (responses)</label><input type="number" min="10" class="zk-input" id="n_n" style="max-width:160px"></div>
+<label style="display:flex;gap:10px;align-items:center;margin:12px 0 0"><input type="checkbox" id="n_c"> Low completion alert</label></div></div>
+<div class="zk-card" style="margin-top:16px"><h3>Your data</h3><p class="sub">Your surveys and responses are stored in the ZKSurvey database. You can take a copy, restore a workspace backup, or erase everything. Responses older than your retention period are deleted automatically.</p>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="zk-btn primary" id="full" href="#">Download all my data (JSON)</a><button class="zk-btn" id="exp">Export workspace backup</button><label class="zk-btn" style="cursor:pointer">Import backup…<input type="file" id="imp" accept=".json,application/json" style="display:none"></label><button class="zk-btn danger" id="rst">Delete all surveys &amp; settings</button></div><div id="stat" class="muted" style="margin-top:10px;font-size:13px"></div></div>
+<div class="zk-card" style="margin-top:16px" id="delCard"><h3>Delete account</h3><p class="sub">Permanently deletes your account, surveys, responses and settings. Tax invoices are kept as required by law. This cannot be undone.</p>
+<label class="zk-label" for="del_p" style="margin-top:0">Confirm with your password</label><input class="zk-input" id="del_p" type="password" autocomplete="current-password" style="max-width:320px"><div style="margin-top:12px"><button class="zk-btn danger" id="del_b">Delete my account</button> <span id="del_m" style="font-size:13px"></span></div></div>
+
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const surveyOpts=sel=>ZKData.getList().map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+
+const AC=ZKAuth.current(); ZG('ac_n').value=AC.name; ZG('ac_e').value=AC.email; ZG('ac_c').value=AC.company;
+ZG('ac_s').onclick=()=>{ if(!ZG('ac_n').value.trim()||!ZG('ac_c').value.trim()){ toast('Name and company are required.'); return; } ZKAuth.updateAccount(AC.id,{name:ZG('ac_n').value.trim(),company:ZG('ac_c').value.trim()}); toast('Account saved.'); };
+ZG('pw_s').onclick=()=>{ const m=ZKAuth.changePassword(AC.id,ZG('pw_o').value,ZG('pw_n').value); ZG('pw_m').style.color=m?'#ffb4c0':'#8ff0c8'; ZG('pw_m').textContent=m||'Password changed.'; if(!m){ ZG('pw_o').value=''; ZG('pw_n').value=''; } };
+const S=ZKData.getSettings();
+ZG('s_w').value=S.workspace; ZG('s_m').value=S.defaultMarket; ZG('s_l').value=S.language; ZG('s_c').value=S.currency; ZG('s_r').value=S.retentionMonths; ZG('s_t').value=S.consentText; ZG('n_l').checked=S.notifyLead; ZG('n_m').checked=S.notifyMilestone; ZG('n_n').value=S.milestone; ZG('n_c').checked=S.notifyLowConv;
+ZG('save').onclick=()=>{ const r=parseInt(ZG('s_r').value,10), m=parseInt(ZG('n_n').value,10); if(!ZG('s_w').value.trim()){ toast('Organisation name is required.'); return; } if(!(r>0)||!(m>0)){ toast('Retention and milestone must be positive numbers.'); return; }
+  ZKData.saveSettings({workspace:ZG('s_w').value.trim(),defaultMarket:ZG('s_m').value.trim(),language:ZG('s_l').value,currency:ZG('s_c').value,retentionMonths:r,consentText:ZG('s_t').value.trim(),notifyLead:ZG('n_l').checked,notifyMilestone:ZG('n_m').checked,milestone:m,notifyLowConv:ZG('n_c').checked}); toast('Settings saved.'); };
+{ const sn=ZKApi.snapshot(); const n=Object.keys(sn.responses).reduce((t,k)=>t+sn.responses[k].length,0); ZG('stat').textContent=sn.list.length+' survey(s) · '+n+' stored response(s) · '+Object.keys(sn.kv).length+' setting collection(s)'; }
+ZG('full').href=ZKApi.api+'/account/export'; ZG('full').setAttribute('download','');
+ZG('exp').onclick=()=>{ const b=new Blob([JSON.stringify(ZKData.exportAll(),null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='zksurvey_workspace_'+new Date().toISOString().slice(0,10)+'.json'; a.click(); toast('Backup downloaded.'); };
+ZG('imp').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const o=JSON.parse(r.result); zkConfirm('Import this backup? It overwrites the matching data in your workspace (plan limits still apply).',()=>{ try{ ZKData.importAll(o); toast('Backup imported — reloading.'); setTimeout(()=>location.reload(),700); }catch(e){ toast(e.message); } }); }catch(err){ toast('Import failed: '+err.message); } }; r.readAsText(f); };
+ZG('rst').onclick=()=>zkConfirm('Delete ALL your surveys, responses, campaigns and settings? This cannot be undone. Download your data first if unsure.',()=>{ try{ ZKData.resetAll(); toast('Deleted — reloading.'); setTimeout(()=>location.reload(),700); }catch(e){ toast(e.message); } });
+ZG('del_b').onclick=()=>{ if(AC.role==='superadmin'){ ZG('del_m').textContent='The platform admin account cannot be deleted here.'; return; } zkConfirm('Delete your account and all data permanently?',()=>{ const r=ZKApi.call('DELETE','/account',{password:ZG('del_p').value}); if(r.status===200){ location.href=ZKAuth.base+'index.html'; } else { ZG('del_m').style.color='#ffb4c0'; ZG('del_m').textContent=r.data.message||'Could not delete.'; } }); };
+
+</script><script src="../js/shell.js"></script></body></html>

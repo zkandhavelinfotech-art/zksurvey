@@ -1,0 +1,60 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customers — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Admin</div><h1>Customers</h1></div><button class="zk-btn primary" id="btnNewCust">+ New customer</button></div>
+<p class="muted" style="margin:-8px 0 18px">Each customer can have several projects; each project can have several surveys. Link a survey to a project from its Survey Details tab.</p>
+<div id="list"></div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const esc=ZKData.esc;
+const IND_OPTS=['FMCG','SaaS / Technology','Media & Entertainment','Real Estate','Education','Healthcare','Retail','Hospitality','Financial Services','Other'];
+const PROJ_STATUS=['Pre-launch','Active','Paused','Completed'];
+const opt=(a,v)=>a.map(x=>'<option'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('');
+function render(){
+  const custs=ZKData.getCustomers();
+  document.getElementById('list').innerHTML = custs.length ? custs.map(c=>{
+    const projs=ZKData.getProjects(c.id);
+    return '<div class="zk-card"><div class="zk-head"><div><h3>'+esc(c.name)+'</h3><p class="sub">'+esc(c.industry)+(c.website?' · '+esc(c.website):'')+(c.contact?' · '+esc(c.contact):'')+'</p></div><div style="display:flex;gap:8px"><button class="zk-btn sm" onclick="editCust(\''+c.id+'\')">Edit</button><button class="zk-btn sm" onclick="addProj(\''+c.id+'\')">+ Project</button><button class="zk-btn sm danger" onclick="delCust(\''+c.id+'\')">Delete</button></div></div>'
+     + (projs.length ? projs.map(p=>{ const surveys=ZKData.surveysForProject(p.id);
+         return '<div class="zk-item"><div class="zk-idx">P</div><div><div class="t">'+esc(p.name)+'</div><div class="m"><span class="zk-chip '+(p.status==='Active'?'g':p.status==='Completed'?'c':'o')+'">'+esc(p.status)+'</span>'+(p.product?esc(p.product)+' · ':'')+(p.geography?esc(p.geography)+' · ':'')+surveys.length+' survey'+(surveys.length===1?'':'s')+(surveys.length?': '+surveys.map(s=>esc(s.name)).join(', '):'')+'</div></div><div class="acts"><button class="zk-btn sm" onclick="editProj(\''+p.id+'\')">Edit</button><a class="zk-btn sm" href="survey-builder.html">Open surveys</a><button class="zk-btn sm danger" onclick="delProj(\''+p.id+'\')">Delete</button></div></div>'; }).join('')
+       : '<div class="zk-empty">No projects yet for this customer.</div>') + '</div>';
+  }).join('') : '<div class="zk-empty">No customers yet — add one to start organising surveys by project.</div>';
+}
+function custForm(c){ c=c||{name:'',industry:'Other',contact:'',website:'',status:'Active'};
+  return '<label class="zk-label" style="margin-top:0">Customer name *</label><input class="zk-input" id="fc_n" value="'+esc(c.name)+'"><div class="zk-grid2"><div><label class="zk-label">Industry</label><select class="zk-select" id="fc_i">'+opt(IND_OPTS,c.industry)+'</select></div><div><label class="zk-label">Status</label><select class="zk-select" id="fc_s">'+opt(['Active','Inactive'],c.status)+'</select></div></div><div class="zk-grid2"><div><label class="zk-label">Contact</label><input class="zk-input" id="fc_c" value="'+esc(c.contact)+'"></div><div><label class="zk-label">Website</label><input class="zk-input" id="fc_w" value="'+esc(c.website)+'"></div></div>'; }
+document.getElementById('btnNewCust').onclick=()=>zkModal('New customer',custForm(),()=>{
+  const n=document.getElementById('fc_n').value.trim(); if(!n){toast('Customer name is required.');return false;}
+  const c=ZKData.createCustomer(n,document.getElementById('fc_i').value); ZKData.updateCustomer(c.id,{contact:document.getElementById('fc_c').value.trim(),website:document.getElementById('fc_w').value.trim(),status:document.getElementById('fc_s').value});
+  render(); toast('Customer added.'); },'Create');
+function editCust(id){ const c=ZKData.getCustomers().find(x=>x.id===id); zkModal('Edit customer',custForm(c),()=>{
+  const n=document.getElementById('fc_n').value.trim(); if(!n){toast('Customer name is required.');return false;}
+  ZKData.updateCustomer(id,{name:n,industry:document.getElementById('fc_i').value,contact:document.getElementById('fc_c').value.trim(),website:document.getElementById('fc_w').value.trim(),status:document.getElementById('fc_s').value});
+  render(); toast('Customer updated.'); },'Save changes'); }
+function delCust(id){ const n=ZKData.getProjects(id).length; zkConfirm('Delete this customer'+(n?' and its '+n+' project(s)':'')+'? Linked surveys keep their saved customer name but lose the project link.',()=>{ ZKData.deleteCustomer(id); render(); toast('Customer deleted.'); }); }
+function projForm(p){ p=p||{name:'',product:'',market:'',geography:'',status:'Pre-launch'};
+  return '<label class="zk-label" style="margin-top:0">Project name *</label><input class="zk-input" id="fp_n" value="'+esc(p.name)+'"><div class="zk-grid2"><div><label class="zk-label">Product / service</label><input class="zk-input" id="fp_p" value="'+esc(p.product)+'"></div><div><label class="zk-label">Status</label><select class="zk-select" id="fp_s">'+opt(PROJ_STATUS,p.status)+'</select></div></div><div class="zk-grid2"><div><label class="zk-label">Target market</label><input class="zk-input" id="fp_m" value="'+esc(p.market)+'"></div><div><label class="zk-label">Geography</label><input class="zk-input" id="fp_g" value="'+esc(p.geography)+'"></div></div>'; }
+function addProj(custId){ zkModal('New project',projForm(),()=>{ const n=document.getElementById('fp_n').value.trim(); if(!n){toast('Project name is required.');return false;}
+  const p=ZKData.createProject(custId,n); ZKData.updateProject(p.id,{product:document.getElementById('fp_p').value.trim(),status:document.getElementById('fp_s').value,market:document.getElementById('fp_m').value.trim(),geography:document.getElementById('fp_g').value.trim()});
+  render(); toast('Project added.'); },'Create'); }
+function editProj(id){ const p=ZKData.getProjects().find(x=>x.id===id); zkModal('Edit project',projForm(p),()=>{ const n=document.getElementById('fp_n').value.trim(); if(!n){toast('Project name is required.');return false;}
+  ZKData.updateProject(id,{name:n,product:document.getElementById('fp_p').value.trim(),status:document.getElementById('fp_s').value,market:document.getElementById('fp_m').value.trim(),geography:document.getElementById('fp_g').value.trim()});
+  render(); toast('Project updated.'); },'Save changes'); }
+function delProj(id){ const n=ZKData.surveysForProject(id).length; zkConfirm('Delete this project'+(n?'? '+n+' survey(s) will be unlinked (not deleted)':'')+'?',()=>{ ZKData.deleteProject(id); render(); toast('Project deleted.'); }); }
+render();
+</script><script src="../js/shell.js"></script></body></html>

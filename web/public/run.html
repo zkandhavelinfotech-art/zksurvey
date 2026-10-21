@@ -1,0 +1,32 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Survey — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="survey-wrap" style="align-items:flex-start;padding-top:28px;flex-direction:column;gap:18px"><a class="logo" href="../index.html" style="align-self:center"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a><div id="app" style="width:100%"></div></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+(function(){
+  const q=new URLSearchParams(location.search), slug=q.get('s'), app=document.getElementById('app');
+  const closedMsg=t=>{ app.innerHTML='<div class="zk-run" style="text-align:center"><h2>'+t[0]+'</h2><p class="hint">'+t[1]+'</p><a class="zk-btn primary" href="../index.html">Go to ZKSurvey</a></div>'; };
+  const r=slug?ZKApi.call('GET','/public/surveys/'+encodeURIComponent(slug)):{status:404};
+  if(r.status!==200){ closedMsg(['This survey is not available','It may be unpublished, archived or the link may be incorrect.']); return; }
+  const info=r.data, def=info.def, esc=ZKData.esc; document.title=def.details.title+' — ZKSurvey';
+  if(info.closed){ closedMsg(['This survey is closed','It is no longer accepting responses. Thank you for your interest.']); return; }
+  if(info.watermark){ const f=document.createElement('p'); f.className='hint'; f.style.cssText='text-align:center;font-size:12px'; f.innerHTML='Made with ZKSurvey · <a href="../register.html" style="color:#9ce6ff">Create your own survey</a>'; app.parentNode.appendChild(f); }
+  const utm={}; ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(k=>{ if(q.get(k)) utm[k]=q.get(k); });
+  const cat=def.details.type==='Category Research';
+  const consentText=def.details.consentText||('Your answers are used only for this research and stored securely'+(cat?'':' on behalf of '+(info.owner.company||'the survey owner'))+'. You can ask for them to be deleted at any time.');
+  app.innerHTML='<div class="zk-run" style="text-align:center"><div class="meta">'+(cat?'':esc(def.details.customer||''))+'</div><h2>'+esc(def.details.title)+'</h2><p class="hint" style="font-size:14px;color:#cfd6ee">'+esc(def.details.intro||def.details.description)+'</p><p class="hint">About '+esc(def.details.time)+'</p>'
+   +'<label class="zk-check" style="justify-content:center;text-align:left;max-width:520px;margin:14px auto"><input type="checkbox" id="cons"> <span style="font-size:13px">'+esc(consentText)+' I agree. <a href="../legal.html#privacy" target="_blank" rel="noopener" style="color:#9ce6ff">Privacy notice</a></span></label>'
+   +'<input type="text" name="website" id="hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">'
+   +'<button class="zk-btn primary" id="go" disabled>Start survey →</button><div id="err" class="hint" style="color:#ff9aa8;margin-top:10px" role="alert"></div></div>';
+  const cons=document.getElementById('cons'), go=document.getElementById('go'); cons.onchange=()=>{ go.disabled=!cons.checked; };
+  go.onclick=()=>{
+    const t0=Date.now();
+    fetch(ZKApi.api+'/public/surveys/'+encodeURIComponent(slug)+'/start',{method:'POST',headers:{'X-ZK-CSRF':'1','Content-Type':'application/json'},body:'{}'}).catch(()=>{});
+    ZKData.mountRunner(app,def,{onSubmit:a=>{
+      fetch(ZKApi.api+'/public/surveys/'+encodeURIComponent(slug)+'/responses',{method:'POST',headers:{'X-ZK-CSRF':'1','Content-Type':'application/json'},keepalive:true,
+        body:JSON.stringify({answers:a,utm:utm,meta:{lang:def.details.language},consent:{given:true,version:'2026-10'},elapsedMs:Date.now()-t0,website:(document.getElementById('hp')||{}).value||''})})
+       .then(r=>r.ok?0:r.json().then(j=>{ app.innerHTML='<div class="zk-run" style="text-align:center"><h2>We could not record your response</h2><p class="hint">'+esc(j.message||'Please try again later.')+'</p></div>'; }))
+       .catch(()=>{ app.innerHTML='<div class="zk-run" style="text-align:center"><h2>We could not record your response</h2><p class="hint">Check your connection and try again.</p></div>'; });
+    }});
+  };
+})();
+</script></body></html>

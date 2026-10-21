@@ -1,0 +1,142 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Plan & Billing — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Account</div><h1>Plan & Billing</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
+
+<div id="modeNote"></div>
+<div class="zk-card"><h3>Your plan</h3><div id="cur"></div><div id="curBtns" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"></div></div>
+<h3 style="margin:22px 0 10px;color:#fff">Plans</h3><div id="plans" class="zk-grid3" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))"></div>
+<div class="zk-card" style="margin-top:18px"><h3>Billing details for GST invoices</h3><p class="sub">Add your GSTIN to claim input tax credit. The place of supply (state) decides CGST + SGST or IGST.</p>
+<div class="zk-grid2"><div><label class="zk-label" for="b_n" style="margin-top:0">Legal / company name</label><input class="zk-input" id="b_n"></div><div><label class="zk-label" for="b_g" style="margin-top:0">GSTIN (optional)</label><input class="zk-input" id="b_g" maxlength="15" placeholder="33ABCDE1234F1Z5"></div></div>
+<div class="zk-grid2"><div><label class="zk-label" for="b_s">State</label><input class="zk-input" id="b_s" placeholder="Tamil Nadu"></div><div><label class="zk-label" for="b_a">Address</label><input class="zk-input" id="b_a"></div></div>
+<button class="zk-btn primary" id="b_save" style="margin-top:12px">Save billing details</button></div>
+<div class="zk-card" style="margin-top:18px"><h3>Invoices</h3><div id="inv" class="muted">No invoices yet.</div></div>
+<div class="zk-card" style="margin-top:18px"><h3>Payment history</h3><div id="ord" class="muted">No payments yet.</div></div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+const inr=n=>'₹'+(n).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2});
+let B={mode:'mock',orders:[],invoices:[],gstRate:18,taxInvoices:false};
+const meter=(l,u,m)=>'<div style="margin:8px 0"><div class="zk-row" style="font-size:13px"><span>'+l+'</span><span>'+u+' / '+m+'</span></div><div style="background:#0c1122;border:1px solid var(--line);border-radius:99px;height:10px;overflow:hidden"><div style="height:100%;width:'+Math.min(100,Math.round(u/Math.max(1,m)*100))+'%;background:linear-gradient(90deg,#8b7cff,#38d0ff)"></div></div></div>';
+function load(){ const r=ZKApi.call('GET','/billing'); if(r.status===200) B=r.data; const m=ZKApi.call('GET','/account'); if(m.status===200) ZKApi.setUser(m.data.account); }
+function draw(){ const a=ZKAuth.current(), p=ZKAuth.planOf(a), u=ZKAuth.usageOf(a);
+  ZG('modeNote').innerHTML=B.mode==='mock'?'<div class="zk-note" style="margin-bottom:16px"><b>Test payments.</b> This server runs with the mock payment gateway: choosing a plan changes your limits and issues an invoice, but no money moves. Production runs with Razorpay.</div>':'';
+  ZG('cur').innerHTML='<div style="font-size:22px;color:#fff;font-weight:800">'+esc(p.name)+' <span class="muted" style="font-size:14px">'+(p.price?inr(p.price)+' / month + GST':'Free')+'</span></div>'
+    +(a.planPeriodEnd&&a.plan!=='free'?'<p class="sub">'+(a.cancelAtPeriodEnd?'Cancels on ':'Renews manually — paid until ')+fmtD(a.planPeriodEnd)+'. After that there is a 3-day grace period, then the account moves to Free.</p>':'')+meter('Surveys',u.surveys,p.surveys)+meter('Responses',u.responses,p.responses);
+  ZG('curBtns').innerHTML=a.plan!=='free'&&a.role!=='superadmin'?(a.cancelAtPeriodEnd?'<button class="zk-btn" id="resume">Keep my plan</button>':'<button class="zk-btn danger" id="cancel">Cancel at period end</button>'):'';
+  if(ZG('cancel')) ZG('cancel').onclick=()=>zkConfirm('Cancel your '+p.name+' plan at the end of the paid period? You keep access until then.',()=>{ ZKApi.call('POST','/billing/cancel',{}); load(); draw(); toast('Cancellation scheduled.'); });
+  if(ZG('resume')) ZG('resume').onclick=()=>{ ZKApi.call('POST','/billing/resume',{}); load(); draw(); toast('Plan will continue.'); };
+  ZG('plans').innerHTML=ZKAuth.plans().map(x=>'<div class="zk-card"><h3>'+esc(x.name)+(x.id===a.plan?' <span class="zk-chip g">Current</span>':'')+'</h3><div style="font-size:26px;font-weight:800;color:#fff">'+(x.price?inr(x.price):'Free')+'</div><p class="sub">'+esc(x.blurb)+'</p><div class="muted" style="font-size:13px;line-height:1.7">'+x.surveys+' surveys · '+x.responses.toLocaleString('en-IN')+' responses<br>'+x.formats+' poster size(s) · '+(x.ads?'Meta Ads brief':'no ads brief')+'<br>'+x.seats+' seat(s)'+(x.clients?' · multiple clients':'')+'</div>'
+    +(x.price?'<button class="zk-btn '+(x.id===a.plan?'':'primary')+'" style="margin-top:12px;width:100%" data-p="'+x.id+'">'+(x.id===a.plan?'Extend / renew':'Choose '+esc(x.name))+'</button>':'')+'</div>').join('');
+  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>choose(b.dataset.p));
+  const bl=a.billing||{}; ZG('b_n').value=bl.legalName||''; ZG('b_g').value=bl.gstin||''; ZG('b_s').value=bl.state||''; ZG('b_a').value=bl.address||'';
+  ZG('inv').innerHTML=B.invoices.length?'<div class="table-wrap"><table class="table"><thead><tr><th>Invoice</th><th>Date</th><th>Total</th><th></th></tr></thead><tbody>'+B.invoices.map(i=>'<tr><td>'+esc(i.number)+'</td><td>'+fmtD(i.issued_at)+'</td><td>'+inr(i.total_paise/100)+'</td><td><a class="zk-btn sm" target="_blank" rel="noopener" href="'+ZKApi.api+'/invoices/'+encodeURIComponent(i.id)+'/html">View / print</a></td></tr>').join('')+'</tbody></table></div>':'No invoices yet.';
+  ZG('ord').innerHTML=B.orders.length?'<div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Plan</th><th>Months</th><th>Total</th><th>Status</th></tr></thead><tbody>'+B.orders.map(o=>'<tr><td>'+fmtD(o.created_at)+'</td><td>'+esc(o.plan_id)+'</td><td>'+o.months+'</td><td>'+inr(o.total_paise/100)+'</td><td><span class="zk-chip '+(o.status==='paid'?'g':o.status==='failed'?'r':'o')+'">'+o.status+'</span></td></tr>').join('')+'</tbody></table></div>':'No payments yet.'; }
+ZG('b_save').onclick=()=>{ const r=ZKApi.call('PATCH','/account',{billing:{legalName:ZG('b_n').value,gstin:ZG('b_g').value,state:ZG('b_s').value,address:ZG('b_a').value}}); if(r.status===200){ ZKApi.setUser(r.data.account); toast('Billing details saved.'); } else toast(r.data.message||'Could not save.'); };
+function choose(pid){
+  const P=ZKAuth.plans().find(x=>x.id===pid), a=ZKAuth.current();
+  const body=()=>{
+    const m=+((ZG('mo')||{}).value||1), amt=P.price*m, gst=Math.round(amt*B.gstRate)/100;
+    const canRazorpay = ['razorpay','both'].includes(B.mode) && B.keyId;
+    return '<label class="zk-label" for="mo" style="margin-top:0">Period</label><select class="zk-select" id="mo"><option value="1"'+(m===1?' selected':'')+'>1 month</option><option value="12"'+(m===12?' selected':'')+'>12 months (annual)</option></select>'
+     +'<table class="table" style="margin-top:12px"><tr><td>'+esc(P.name)+' × '+m+' month'+(m>1?'s':'')+'</td><td style="text-align:right">'+inr(amt)+'</td></tr><tr><td>GST '+B.gstRate+'%</td><td style="text-align:right">'+inr(gst)+'</td></tr><tr><td><b>Total</b></td><td style="text-align:right"><b>'+inr(amt+gst)+'</b></td></tr></table>'
+     +'<label class="zk-label" style="margin-top:14px">Payment Method</label>'
+     +'<div style="display:flex;flex-direction:column;gap:8px">'
+     +'<label class="zk-radio" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #26305a;border-radius:8px;cursor:pointer"><input type="radio" name="pay_method" value="upi" checked> <div><b>UPI (Google Pay / PhonePe / Paytm / QR Code)</b><div class="muted" style="font-size:12px">Instant payment via any UPI app or scan QR</div></div></label>'
+     +(canRazorpay?'<label class="zk-radio" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #26305a;border-radius:8px;cursor:pointer"><input type="radio" name="pay_method" value="razorpay"> <div><b>Cards / Netbanking / Razorpay</b><div class="muted" style="font-size:12px">Credit/Debit cards, netbanking & wallet</div></div></label>':'')
+     +(B.mode==='mock'?'<label class="zk-radio" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #26305a;border-radius:8px;cursor:pointer"><input type="radio" name="pay_method" value="mock"> <div><b>Mock Gateway (Test)</b><div class="muted" style="font-size:12px">Development simulator — no money moves</div></div></label>':'')
+     +'</div>';
+  };
+  zkModal('Subscribe to '+esc(P.name),body(),()=>{
+    const m = +ZG('mo').value;
+    const method = (document.querySelector('input[name="pay_method"]:checked')||{}).value || 'upi';
+    pay(P.id, m, method);
+  }, 'Continue to Payment →');
+  const sel=ZG('mo'); if(sel) sel.onchange=()=>{ ZG('zkModalBody').innerHTML=body(); ZG('mo').onchange=sel.onchange; };
+}
+function done(){ toast('Payment received — plan updated.'); load(); draw(); }
+function pay(pid, months, method){
+  const r=ZKApi.call('POST','/billing/checkout',{planId:pid,months:months,gateway:method});
+  if(r.status!==200){ toast(r.data.message||'Could not start checkout.'); return; }
+  const o=r.data;
+
+  if(o.mode==='mock'){
+    const p=ZKApi.call('POST','/billing/mock-pay',{orderId:o.orderId});
+    if(p.status===200) done(); else toast(p.data.message||'Payment failed.');
+    return;
+  }
+
+  if(o.mode==='upi' || method==='upi'){
+    showUpiModal(o);
+    return;
+  }
+
+  const open=()=>new Razorpay({key:o.keyId,amount:o.amount,currency:'INR',name:'ZKSurvey',description:o.plan+' plan',order_id:o.gatewayOrderId,prefill:o.prefill,theme:{color:'#38d0ff'},
+    handler:resp=>{ const v=ZKApi.call('POST','/billing/verify',{orderId:o.orderId,razorpay_payment_id:resp.razorpay_payment_id,razorpay_signature:resp.razorpay_signature}); if(v.status===200) done(); else toast(v.data.message||'Could not confirm payment.'); }}).open();
+  if(window.Razorpay) open(); else { const sc=document.createElement('script'); sc.src='https://checkout.razorpay.com/v1/checkout.js'; sc.onload=open; sc.onerror=()=>toast('Could not load the payment window. Check your connection.'); document.head.appendChild(sc); }
+}
+
+function showUpiModal(o){
+  const upi = o.upi || {};
+  const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(upi.uri || '');
+  const html = '<div style="text-align:center">'
+    +'<div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:4px">Scan & Pay ₹'+(o.amount/100).toFixed(2)+'</div>'
+    +'<div class="muted" style="font-size:13px;margin-bottom:12px">Pay to <b>'+esc(upi.payeeName)+'</b> via Google Pay, PhonePe, Paytm or BHIM</div>'
+    +'<div style="background:#fff;padding:12px;border-radius:12px;display:inline-block;margin-bottom:12px">'
+    +'<img src="'+qrUrl+'" alt="UPI QR Code" style="width:200px;height:200px;display:block">'
+    +'</div>'
+    +'<div style="margin-bottom:14px"><span class="muted" style="font-size:13px">UPI ID: </span><b style="color:#9ce6ff;font-family:monospace;font-size:15px">'+esc(upi.id)+'</b>'
+    +' <button class="zk-btn sm" id="copyUpi" style="margin-left:8px">Copy</button></div>'
+    +'<a href="'+esc(upi.uri)+'" class="zk-btn primary" style="display:inline-block;padding:8px 16px;text-decoration:none;font-weight:700;margin-bottom:16px">Open UPI App (Mobile)</a>'
+    +'<div style="border-top:1px solid #26305a;padding-top:14px;text-align:left">'
+    +'<label class="zk-label" for="upi_utr">Enter 12-digit UPI UTR / Reference No. after paying</label>'
+    +'<div style="display:flex;gap:8px">'
+    +'<input class="zk-input" id="upi_utr" placeholder="e.g. 429182749102" style="font-size:15px;letter-spacing:1px">'
+    +'<button class="zk-btn primary" id="upi_confirm" style="white-space:nowrap">Confirm Payment</button>'
+    +'</div><div id="upi_err" class="hint" style="color:#ff9aa8;margin-top:6px"></div>'
+    +'</div></div>';
+
+  zkModal('Pay with UPI / QR Code', html, null, null);
+  const copyBtn = ZG('copyUpi');
+  if(copyBtn) copyBtn.onclick=()=>{ navigator.clipboard.writeText(upi.id); toast('UPI ID copied to clipboard!'); };
+
+  const confBtn = ZG('upi_confirm');
+  if(confBtn) confBtn.onclick=()=>{
+    const utr = (ZG('upi_utr').value||'').trim();
+    if(utr.length < 4){ ZG('upi_err').textContent='Please enter a valid 12-digit UPI Reference / UTR number.'; return; }
+    ZG('upi_err').textContent='';
+    confBtn.disabled = true;
+    confBtn.textContent = 'Verifying…';
+    const sub = ZKApi.call('POST','/billing/upi-submit',{orderId:o.orderId, utrNumber:utr});
+    if(sub.status===200){
+      toast(sub.data.message || 'Payment submitted successfully!');
+      const m = document.getElementById('zkModal'); if(m) m.remove();
+      load(); draw();
+    } else {
+      confBtn.disabled = false;
+      confBtn.textContent = 'Confirm Payment';
+      ZG('upi_err').textContent = sub.data.message || 'Could not verify UTR. Check and try again.';
+    }
+  };
+}
+load(); draw();
+{ const up=qp('upgrade'); if(up&&ZKAuth.plans().some(x=>x.id===up&&x.price)&&up!==ZKAuth.current().plan) choose(up); }
+</script><script src="../js/shell.js"></script></body></html>

@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Surveys — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Admin</div><h1>Surveys</h1></div><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="zk-btn" href="survey-templates.html">Templates</a><button class="zk-btn primary" id="btnNew">+ New survey</button></div></div>
+<div class="zk-card"><h3>All surveys</h3><p class="sub">Any industry — product launches, software pre-launch validation, customer feedback and more. Create, edit, duplicate, publish, archive or delete. Stored in your account.</p><div id="rows"></div></div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const esc=ZKData.esc;
+function ago(t){ const m=Math.round((Date.now()-t)/60000); return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'; }
+function render(){
+  const list=ZKData.getList(); const box=document.getElementById('rows');
+  if(!list.length){ box.innerHTML='<div class="zk-empty">No surveys yet — create your first one.</div>'; return; }
+  box.innerHTML=list.map((s,i)=>{ const d=ZKData.getDef(s.id), st=d.publish.status, n=ZKData.getResponses(s.id).length;
+    const cls=st==='Published'?'g':st==='Draft'?'o':st==='Archived'?'r':'c';
+    return '<div class="zk-item"><div class="zk-idx">'+(i+1)+'</div><div><div class="t">'+esc(d.details.title)+'</div><div class="m"><span class="zk-chip '+cls+'">'+st+'</span><span class="zk-chip">'+esc(d.details.industry)+'</span>'+d.questions.length+' questions · '+d.sections.length+' sections · '+d.rules.length+' rules · '+n+' responses · updated '+ago(s.updated)+'</div></div><div class="acts">'
+     +'<a class="zk-btn sm primary" href="survey-builder.html?survey='+encodeURIComponent(s.id)+'">Open builder</a>'
+     +(st==='Published'?'<a class="zk-btn sm" target="_blank" href="../public/run.html?s='+encodeURIComponent(d.publish.slug)+'">View live ↗</a>':'')
+     +'<button class="zk-btn sm" onclick="dup(\''+s.id+'\')">Duplicate</button>'
+     +(st==='Archived'?'<button class="zk-btn sm" onclick="setSt(\''+s.id+'\',\'Draft\')">Restore</button>':'<button class="zk-btn sm" onclick="setSt(\''+s.id+'\',\'Archived\')">Archive</button>')
+     +'<button class="zk-btn sm danger" onclick="del(\''+s.id+'\')">Delete</button></div></div>'; }).join('');
+}
+function dup(id){ if(!ZKData.duplicateSurvey(id)){ toast(ZKData.lastError()); return; } render(); toast('Survey duplicated as a draft.'); }
+function setSt(id,st){ const d=ZKData.getDef(id); d.publish.status=st; ZKData.saveDef(id,d); render(); toast(st==='Archived'?'Survey archived.':'Restored to draft.'); }
+function del(id){ zkConfirm('Delete this survey and its questions? This cannot be undone.',()=>{ ZKData.deleteSurvey(id); render(); toast('Survey deleted.'); }); }
+document.getElementById('btnNew').onclick=()=>zkCreateSurveyModal(null,id=>{ location.href='survey-builder.html?survey='+id; });
+render();
+</script><script src="../js/shell.js"></script></body></html>

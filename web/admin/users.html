@@ -1,0 +1,44 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Users — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Admin</div><h1>Users</h1></div><button class="zk-btn primary" id="btnAddUser">+ Invite user</button></div>
+<p class="muted" style="margin:-8px 0 18px">Role list — matches the roles in the "Viewing as" switcher in the sidebar. Team invitations and per-seat permissions are planned for Phase 9; today each account has one owner login.</p>
+<div class="zk-card"><div class="table-wrap"><table class="table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const esc=ZKData.esc;
+function render(){
+  const users=ZKData.getUsers();
+  document.getElementById('rows').innerHTML = users.map(u=>'<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.email)+'</td><td><span class="zk-chip c">'+esc(u.role)+'</span></td><td><span class="zk-chip '+(u.status==='Active'?'g':'')+'">'+esc(u.status)+'</span></td><td style="display:flex;gap:8px"><button class="zk-btn sm" onclick="editUser(\''+u.id+'\')">Edit</button><button class="zk-btn sm danger" onclick="delUser(\''+u.id+'\')">Remove</button></td></tr>').join('') || '<tr><td colspan="5" class="zk-empty">No users yet.</td></tr>';
+}
+function userForm(u){ u=u||{name:'',email:'',role:ZKData.ROLES[0],status:'Active'};
+  return '<label class="zk-label" style="margin-top:0">Name *</label><input class="zk-input" id="fu_n" value="'+esc(u.name)+'"><label class="zk-label">Email *</label><input class="zk-input" id="fu_e" value="'+esc(u.email)+'"><div class="zk-grid2"><div><label class="zk-label">Role</label><select class="zk-select" id="fu_r">'+ZKData.ROLES.map(r=>'<option'+(r===u.role?' selected':'')+'>'+r+'</option>').join('')+'</select></div><div><label class="zk-label">Status</label><select class="zk-select" id="fu_s"><option'+(u.status==='Active'?' selected':'')+'>Active</option><option'+(u.status==='Invited'?' selected':'')+'>Invited</option><option'+(u.status==='Disabled'?' selected':'')+'>Disabled</option></select></div></div>'; }
+document.getElementById('btnAddUser').onclick=()=>zkModal('Invite user',userForm(),()=>{
+  const n=document.getElementById('fu_n').value.trim(), e=document.getElementById('fu_e').value.trim();
+  if(!n||!e){ toast('Name and email are required.'); return false; }
+  ZKData.createUser({name:n,email:e,role:document.getElementById('fu_r').value,status:document.getElementById('fu_s').value});
+  render(); toast('User invited.'); },'Invite');
+function editUser(id){ const u=ZKData.getUsers().find(x=>x.id===id); zkModal('Edit user',userForm(u),()=>{
+  const n=document.getElementById('fu_n').value.trim(), e=document.getElementById('fu_e').value.trim();
+  if(!n||!e){ toast('Name and email are required.'); return false; }
+  ZKData.updateUser(id,{name:n,email:e,role:document.getElementById('fu_r').value,status:document.getElementById('fu_s').value});
+  render(); toast('User updated.'); },'Save changes'); }
+function delUser(id){ zkConfirm('Remove this user?',()=>{ ZKData.deleteUser(id); render(); toast('User removed.'); }); }
+render();
+</script><script src="../js/shell.js"></script></body></html>

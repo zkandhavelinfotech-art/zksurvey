@@ -1,0 +1,68 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Launch Journey — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Research</div><h1>Launch Journey</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
+
+<p class="muted" style="margin:-8px 0 16px">Every survey — product launch, software pre-launch, feedback or poll — moves through the same journey. This page shows where each one stands and what to do next.</p>
+<div class="zk-card"><div class="zk-hdr2"><div><label class="zk-label" style="margin-top:0" for="sv">Survey</label><select class="zk-select" id="sv"></select></div><div id="ov" style="text-align:right"></div></div><div style="background:#0c1122;border:1px solid var(--line);border-radius:99px;height:12px;overflow:hidden;margin-top:12px"><div id="bar" style="height:100%;width:0;background:linear-gradient(90deg,#8b7cff,#38d0ff)"></div></div></div>
+<div id="next" style="margin-top:16px"></div>
+<div id="steps" style="margin-top:16px"></div>
+<div class="zk-card" style="margin-top:16px"><h3>Lead sources</h3><p class="sub">Which channel your interested buyers came from.</p><div id="src" class="muted">—</div></div>
+
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const surveyOpts=sel=>ZKData.getList().map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+const DIST_KEY='zk_dist_v12';
+function distGet(id){ return (ZKStore.get(DIST_KEY,{})[id])||{poster:{},channels:{}}; }
+function distMark(id,kind,key){ const all=ZKStore.get(DIST_KEY,{}); const d=all[id]||{poster:{},channels:{}}; d[kind][key]=Date.now(); all[id]=d; ZKStore.set(DIST_KEY,all); }
+
+let sid=qp('survey')||(ZKData.getList()[0]||{}).id;
+if(!sid){ document.querySelector('main').insertAdjacentHTML('beforeend','<div class="zk-empty">No surveys yet. <a href="survey-templates.html" style="color:#9ce6ff">Create one from a template</a>.</div>'); throw new Error('none'); }
+function compute(){
+  const d=ZKData.getDef(sid), a=ZKData.analyze(sid), dist=distGet(sid), v=ZKData.validate(d), bad=v.filter(x=>x.level==='bad').length, pub=d.publish.status==='Published';
+  const target=d.details.targetSample||0, n=a.responses, strat=ZKData.getStrategy(sid); const acts=['30','60','90'].reduce((s,k)=>s+(strat[k]||[]).length,0);
+  const posters=Object.keys(dist.poster).length, chans=Object.keys(dist.channels).length;
+  const S=(state,metric)=>({state:state,metric:metric});
+  return [
+   Object.assign({n:'Brief',d:'Say what you are launching and for whom.',href:'survey-builder.html?survey='+sid,cta:'Edit details'},(d.details.product||d.details.customer)?S('done',(d.details.product||d.details.customer)+(d.details.market?' · '+d.details.market:'')):S('todo','Add the product or service name')),
+   Object.assign({n:'Build survey',d:'Sections, questions, logic and a neutral introduction.',href:'survey-builder.html?survey='+sid,cta:'Open builder'},d.questions.length&&!bad?S('done',d.questions.length+' questions · '+d.rules.length+' logic rules'):d.questions.length?S('doing',bad+' issue(s) to fix before publishing'):S('todo','No questions yet')),
+   Object.assign({n:'Publish',d:'Get the public link.',href:'distribute.html?survey='+sid,cta:'Publish'},pub?S('done','Live at /public/run.html?s='+d.publish.slug):S(d.questions.length?'doing':'todo',d.publish.status)),
+   Object.assign({n:'Poster & channels',d:'Make the poster and prepare Instagram, Facebook, YouTube, X and WhatsApp posts.',href:'distribute.html?survey='+sid,cta:'Open Distribute'},posters&&chans?S('done',posters+' poster size(s) downloaded · '+chans+' channel kit(s) used'):(posters||chans)?S('doing',posters+' poster(s) · '+chans+' channel kit(s)'):S(pub?'doing':'todo','Nothing posted yet')),
+   Object.assign({n:'Collect responses',d:'Respondents answer through your tagged links.',href:'responses.html',cta:'View responses'},n?(target&&n>=target?S('done',n+' of '+target+' target'):S('doing',n+(target?' of '+target+' target':' responses'))):S(pub?'doing':'todo','No responses yet')),
+   Object.assign({n:'Capture leads',d:'People who consent to be contacted.',href:'leads.html',cta:'Open leads'},a.leads?S('done',a.leads+' lead(s)'+(a.sources[0]?' · top source '+a.sources[0].source:'')):S(n?'doing':'todo',n?'No leads yet':'—')),
+   Object.assign({n:'Read the signals',d:'Insights, segments and which channel works.',href:'insights.html?survey='+sid,cta:'Open insights'},n>=30?S('done','Enough responses to read direction'):n?S('doing',n+' of 30 minimum for reading direction'):S('todo','Needs responses')),
+   Object.assign({n:'Plan the launch',d:'30 / 60 / 90 day plan from what you learned.',href:'strategy-builder.html',cta:'Open strategy builder'},acts?S('done',acts+' activities planned'):S(n>=30?'doing':'todo','No plan yet'))];
+}
+function draw(){ ZG('sv').innerHTML=surveyOpts(sid); const st=compute(); const done=st.filter(x=>x.state==='done').length;
+  ZG('bar').style.width=Math.round(done/st.length*100)+'%'; ZG('ov').innerHTML='<b style="color:#fff;font-size:20px">'+done+' of '+st.length+'</b><div class="muted" style="font-size:12px">steps complete</div>';
+  const nx=st.find(x=>x.state!=='done'); ZG('next').innerHTML=nx?'<div class="zk-note"><b>Next best action: '+esc(nx.n)+'.</b> '+esc(nx.d)+' <a class="zk-btn sm primary" href="'+nx.href+'">'+esc(nx.cta)+'</a></div>':'<div class="zk-note"><b>Every step is complete.</b> Review insights and keep optimising.</div>';
+  const chip={done:'<span class="zk-chip g">Done</span>',doing:'<span class="zk-chip o">In progress</span>',todo:'<span class="zk-chip">Not started</span>'};
+  ZG('steps').innerHTML=st.map((x,i)=>'<div class="zk-card" style="margin-bottom:10px"><div class="zk-row"><div style="display:flex;gap:14px;align-items:center"><div style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:'+(x.state==='done'?'#34d399':'#1d2545')+';color:'+(x.state==='done'?'#07101e':'#cfd6ee')+'" aria-hidden="true">'+(x.state==='done'?'✓':(i+1))+'</div><div><b style="color:#fff">'+esc(x.n)+'</b><div class="muted" style="font-size:13px">'+esc(x.d)+'</div><div style="font-size:13px;color:#cfd6ee;margin-top:2px">'+esc(x.metric)+'</div></div></div><div style="display:flex;gap:8px;align-items:center">'+chip[x.state]+'<a class="zk-btn sm" href="'+x.href+'">'+esc(x.cta)+'</a></div></div></div>').join('');
+  const d=ZKData.getDef(sid), resp=ZKData.getResponses(sid), lq=d.questions.filter(q=>q.type==='Lead Capture').map(q=>q.id), t={};
+  resp.forEach(r=>{ const s=(r.utm&&r.utm.utm_source)||'direct'; t[s]=t[s]||{n:0,l:0}; t[s].n++; if(lq.some(q=>r.answers[q])) t[s].l++; });
+  const rows=Object.entries(t).sort((a,b)=>b[1].l-a[1].l||b[1].n-a[1].n);
+  ZG('src').innerHTML=rows.length?'<div class="table-wrap"><table class="table"><thead><tr><th>Source</th><th>Responses</th><th>Leads</th><th>Lead rate</th></tr></thead><tbody>'+rows.map(([k,v])=>'<tr><td><span class="zk-chip c">'+esc(k)+'</span></td><td>'+v.n+'</td><td>'+v.l+'</td><td>'+(v.n?Math.round(v.l/v.n*100):0)+'%</td></tr>').join('')+'</tbody></table></div>':'No responses yet.'; }
+ZG('sv').onchange=e=>{ sid=e.target.value; history.replaceState(null,'','?survey='+sid); draw(); };
+draw();
+
+</script><script src="../js/shell.js"></script></body></html>

@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sources — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Admin</div><h1>Sources</h1></div></div>
+<p class="muted" style="margin:-8px 0 18px">Where responses came from, across every survey — read from each response's UTM tag, captured automatically from the campaign link.</p>
+<div id="empty" class="zk-empty" style="display:none">No responses with source data yet.</div>
+<div class="zk-card" id="card"><h3>Response sources</h3><div id="rows"></div></div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const esc=ZKData.esc, a=ZKData.allAttribution();
+document.getElementById('empty').style.display = a.total? 'none':'block';
+document.getElementById('card').style.display = a.total? 'block':'none';
+document.getElementById('rows').innerHTML = a.sources.map(s=>'<div class="bar-row"><div class="bar-meta"><span>'+esc(s.source)+' <span class="muted">· '+esc(s.surveys.join(', '))+'</span></span><b>'+s.n+' · '+s.pct+'%</b></div><div class="bar-bg"><div class="bar-fill" style="width:'+Math.max(s.pct,3)+'%"></div></div></div>').join('');
+</script><script src="../js/shell.js"></script></body></html>

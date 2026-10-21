@@ -1,0 +1,318 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Survey Builder — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"><script src="../js/vendor/xlsx.full.min.js"></script></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Surveys / Builder</div><h1>Survey Builder</h1></div>
+ <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><span id="statusChip" class="zk-chip"></span><span id="savedNote" class="muted" style="font-size:12px"></span><button class="zk-btn" id="btnNew">+ New survey</button></div></div>
+<div class="zk-card" style="padding:14px 18px"><div class="zk-grid2" style="align-items:end"><div><label class="zk-label" style="margin-top:0">Working survey</label><select class="zk-select" id="wsSelect"></select></div><div class="muted" style="font-size:13px">Works for any industry — product launches, software pre-launch validation, customer feedback and more. Every change autosaves in this browser.</div></div></div>
+<div class="zk-tabs" id="tabs"></div>
+
+<!-- 1 Details -->
+<section class="zk-panel on" id="p0"><div class="zk-grid2">
+ <div class="zk-card"><h3>Survey details</h3><p class="sub">What this survey is, who it is for and what it is about.</p>
+  <label class="zk-label">Survey title *</label><input class="zk-input" id="d_title">
+  <div class="zk-grid2"><div><label class="zk-label">Survey type *</label><select class="zk-select" id="d_type"></select></div><div><label class="zk-label">Industry</label><select class="zk-select" id="d_industry"></select></div></div>
+  <label class="zk-label">Project</label><div style="display:flex;gap:8px"><select class="zk-select" id="d_project"></select><button class="zk-btn sm" type="button" id="btnNewProject">+ New</button></div>
+  <div class="zk-grid2"><div><label class="zk-label">Customer / organisation</label><input class="zk-input" id="d_customer"></div><div><label class="zk-label">Product / service</label><input class="zk-input" id="d_product"></div></div>
+  <label class="zk-label">Description</label><textarea class="zk-textarea" id="d_description" rows="4"></textarea></div>
+ <div class="zk-card"><h3>Experience &amp; settings</h3><p class="sub">How respondents experience the survey.</p>
+  <div class="zk-grid2"><div><label class="zk-label">Language</label><select class="zk-select" id="d_language"></select></div><div><label class="zk-label">Estimated time</label><select class="zk-select" id="d_time"></select></div></div>
+  <label class="zk-label">Lead capture</label><select class="zk-select" id="d_leadCapture"></select>
+  <label class="zk-label">Thank-you message *</label><textarea class="zk-textarea" id="d_thanks" rows="3"></textarea>
+  <label class="zk-label">Introduction shown before the first question</label><textarea class="zk-textarea" id="d_intro" rows="3" placeholder="Keep it neutral for category research — do not name the client brand."></textarea>
+  <div class="zk-grid2"><div><label class="zk-label">Target sample (responses)</label><input class="zk-input" type="number" min="0" id="d_targetSample" placeholder="e.g. 300"></div><div></div></div>
+  <label class="zk-label">Consent wording for lead capture</label><textarea class="zk-textarea" id="d_consentText" rows="2" placeholder="Leave blank to use the default"></textarea>
+  <div class="zk-note">Milro Dishwash and Scriptcraft Pro are sample surveys. Create a blank survey for any other industry.</div></div></div></section>
+
+<!-- 2 Sections -->
+<section class="zk-panel" id="p1"><div class="zk-card"><div class="zk-head"><div><h3>Sections</h3><p class="sub">Group questions into steps. Reorder, rename, duplicate or delete.</p></div><button class="zk-btn primary" id="btnAddSection">+ Add section</button></div><div id="secList"></div></div></section>
+
+<!-- 3 Questions -->
+<section class="zk-panel" id="p2"><div class="zk-card"><div class="zk-head"><div><h3>Questions</h3><p class="sub">Create, edit, reorder, duplicate and delete. 19 question types.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><select class="zk-select" id="qFilter" style="width:auto"></select><button class="zk-btn" id="btnBank">+ From question bank</button><button class="zk-btn primary" id="btnAddQ">+ Add question</button></div></div><div id="qList"></div></div>
+ <div class="zk-card"><h3>Optional: bulk update from Excel</h3><p class="sub">Upload a .xlsx, .xls or .csv to add or update questions in this survey. Columns: <b>Section, Question, Type, Options, Required</b> (options separated by |). Same question text = update; new text = add. Missing sections are created.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><input type="file" id="importFile" accept=".xlsx,.xls,.csv" class="zk-input" style="width:auto;max-width:100%"><button class="zk-btn primary" id="btnImport">Import file</button><button class="zk-btn" id="btnTemplate">Download template</button><button class="zk-btn" id="btnExport">Export current questions</button></div></div></section>
+
+<!-- 4 Answer options -->
+<section class="zk-panel" id="p3"><div class="zk-grid2">
+ <div class="zk-card"><h3>Answer options</h3><p class="sub">Pick a question, then add, edit, reorder or delete its answers.</p><label class="zk-label" style="margin-top:0">Question</label><select class="zk-select" id="optQ"></select><div id="optList" style="margin-top:12px"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="zk-btn primary" id="btnAddOpt">+ Add option</button><button class="zk-btn" id="btnBulkOpt">Add several</button><button class="zk-btn" id="btnAddOther">Add “Other”</button></div></div>
+ <div class="zk-card"><h3>Question settings</h3><p class="sub" id="optSub"></p><div id="optSettings"></div></div></div></section>
+
+<!-- 5 Logic -->
+<section class="zk-panel" id="p4"><div class="zk-card"><div class="zk-head"><div><h3>Conditional logic</h3><p class="sub">IF / AND / OR conditions that show or hide questions, skip sections, end the survey or redirect.</p></div><div style="display:flex;gap:8px"><button class="zk-btn" onclick="tab(5)">Test in preview</button><button class="zk-btn primary" id="btnAddRule">+ Add rule</button></div></div><div id="ruleList"></div>
+ <div class="zk-note">Rules read top to bottom through the survey: the question a rule depends on must come <b>before</b> the question it controls. A question with a “show” rule stays hidden until one of its show rules is true.</div></div></section>
+
+<!-- 6 Preview -->
+<section class="zk-panel" id="p5"><div class="zk-card"><div class="zk-head"><div><h3>Preview &amp; test logic</h3><p class="sub">This is exactly what respondents will see. Answers here are not saved.</p></div><div style="display:flex;gap:8px"><button class="zk-btn sm" id="pvDesk">Desktop</button><button class="zk-btn sm" id="pvMob">Mobile</button><button class="zk-btn sm" id="pvRestart">↺ Restart</button></div></div>
+ <div class="zk-grid2" style="grid-template-columns:2fr 1fr;align-items:start"><div class="zk-frame" id="pvFrame"><div id="pvMount"></div></div><div class="zk-card" style="margin:0"><h3>Logic trace</h3><div class="zk-trace" id="pvTrace"></div></div></div></div></section>
+
+<!-- 7 Publish -->
+<section class="zk-panel" id="p6"><div class="zk-card"><h3>Publish workflow</h3><p class="sub">Draft → Validate → Publish → Close or archive.</p><div class="zk-flow" id="flow"></div>
+ <div class="zk-grid2"><div><div id="checks"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px" id="pubBtns"></div></div>
+ <div><h3 style="font-size:15px;margin:0 0 8px">Distribution</h3><div id="dist"></div></div></div></div></section>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const TABS=['Survey details','Sections','Questions','Answer options','Conditional logic','Preview','Publish'];
+const TYPE_OPTS=['Category Research','Product Launch Research','Pre-Launch Validation','Market Research','Customer Feedback','Lead Generation','Poll','Employee Survey','Event Feedback','Service Evaluation','Other'];
+const IND_OPTS=['FMCG','SaaS / Technology','Media & Entertainment','Real Estate','Education','Healthcare','Retail','Hospitality','Financial Services','Other'];
+const LANG_OPTS=['English','English + Tamil','Tamil','Hindi','Multi-language'];
+const TIME_OPTS=['2–4 minutes','5–7 minutes','8–10 minutes','10+ minutes'];
+const LEAD_OPTS=['Optional at end','Required','Disabled'];
+const esc=ZKData.esc;
+const list=ZKData.getList();
+let id=new URLSearchParams(location.search).get('survey'); if(!id||!list.find(s=>s.id===id)) id=list[0].id;
+let def=ZKData.getDef(id), curTab=0, optQ=null, mounted=null;
+const opt=(a,v)=>a.map(x=>'<option'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('');
+function persist(){ const ok=ZKData.saveDef(id,def); if(ok===false){ def=ZKData.getDef(id); } document.getElementById('savedNote').textContent=(ok===false?'Not saved ':'Saved ')+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); renderChip(); return ok!==false; }
+function normalize(){ const order=def.sections.map(s=>s.id); def.questions=def.questions.map((q,i)=>[q,i]).sort((a,b)=>(order.indexOf(a[0].sectionId)-order.indexOf(b[0].sectionId))||(a[1]-b[1])).map(x=>x[0]); }
+function secName(sid){ const s=def.sections.find(x=>x.id===sid); return s?s.name:'—'; }
+function qById(qid){ return def.questions.find(q=>q.id===qid); }
+function cleanRules(){ const qids=new Set(def.questions.map(q=>q.id)), sids=new Set(def.sections.map(s=>s.id)); const before=def.rules.length;
+  def.rules=def.rules.filter(r=>r.conds.every(c=>qids.has(c.qid)) && !((r.action==='show'||r.action==='hide')&&!qids.has(r.target)) && !(r.action==='skipSection'&&!sids.has(r.target)));
+  return before-def.rules.length; }
+function afterStructureChange(msg){ normalize(); const n=cleanRules(); persist(); renderAll(); toast(msg+(n?' — '+n+' dependent logic rule(s) removed.':'')); }
+function renderChip(){ const st=def.publish.status; const c=document.getElementById('statusChip'); c.textContent=st; c.className='zk-chip '+(st==='Published'?'g':st==='Draft'?'o':st==='Archived'?'r':'c'); }
+
+/* header */
+document.getElementById('wsSelect').innerHTML=list.map(s=>'<option value="'+s.id+'"'+(s.id===id?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+document.getElementById('wsSelect').onchange=e=>{ location.search='?survey='+encodeURIComponent(e.target.value); };
+document.getElementById('btnNew').onclick=()=>zkCreateSurveyModal(null,nid=>{ location.search='?survey='+nid; });
+
+/* tabs */
+const tabsEl=document.getElementById('tabs');
+tabsEl.innerHTML=TABS.map((t,i)=>'<button data-i="'+i+'"><span class="n">'+(i+1)+'</span>'+t+'</button>').join('');
+tabsEl.querySelectorAll('button').forEach(b=>b.onclick=()=>tab(+b.dataset.i));
+function tab(n){ curTab=n; tabsEl.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===n)); document.querySelectorAll('.zk-panel').forEach((p,i)=>p.classList.toggle('on',i===n)); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+/* question bank insert */
+document.getElementById('btnBank').onclick=()=>{
+  const bank=ZKData.getBank(); if(!def.sections.length){ toast('Add a section first.'); return; }
+  zkModal('Insert from question bank','<label class="zk-label" style="margin-top:0">Group</label><select class="zk-select" id="bk_g">'+bank.map(g=>'<option value="'+g.id+'">'+esc(g.name)+' ('+g.questions.length+')</option>').join('')+'</select><label class="zk-label">Questions</label><div id="bk_q" style="max-height:220px;overflow:auto"></div><label class="zk-label">Into section</label><select class="zk-select" id="bk_s">'+def.sections.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('')+'</select>',()=>{
+    const g=bank.find(x=>x.id===document.getElementById('bk_g').value); const picked=[...document.querySelectorAll('#bk_q input:checked')].map(i=>g.questions[+i.value]); if(!picked.length){ toast('Tick at least one question.'); return false; }
+    picked.forEach(q=>def.questions.push(ZKData.bankToQuestion(q,document.getElementById('bk_s').value))); afterStructureChange(picked.length+' question(s) inserted'); },'Insert');
+  const fill=()=>{ const g=bank.find(x=>x.id===document.getElementById('bk_g').value); document.getElementById('bk_q').innerHTML=g.questions.map((q,i)=>'<label style="display:flex;gap:8px;margin:6px 0;align-items:flex-start"><input type="checkbox" value="'+i+'" checked> <span>'+esc(q.text)+' <span class="zk-chip c">'+esc(q.type)+'</span></span></label>').join('')||'<div class="muted">Empty group.</div>'; };
+  document.getElementById('bk_g').onchange=fill; fill();
+};
+/* 1 details */
+['title','type','industry','customer','product','description','language','time','leadCapture','thanks','intro','targetSample','consentText'].forEach(k=>{
+  const el=document.getElementById('d_'+k); const lists={type:TYPE_OPTS,industry:IND_OPTS,language:LANG_OPTS,time:TIME_OPTS,leadCapture:LEAD_OPTS};
+  if(lists[k]){ const v=def.details[k]; el.innerHTML=opt(lists[k].includes(v)?lists[k]:lists[k].concat(v),v); } else el.value=(def.details[k]==null?'':def.details[k]);
+  el.oninput=el.onchange=()=>{ def.details[k]= k==='targetSample' ? (parseInt(el.value,10)||0) : el.value; persist(); };
+});
+function renderProjectSelect(){
+  const sel=document.getElementById('d_project'); const custs=ZKData.getCustomers();
+  let h='<option value="">— Not linked to a customer project —</option>';
+  custs.forEach(c=>{ const ps=ZKData.getProjects(c.id); if(ps.length) h+='<optgroup label="'+esc(c.name)+'">'+ps.map(p=>'<option value="'+p.id+'"'+(p.id===def.details.projectId?' selected':'')+'>'+esc(p.name)+'</option>').join('')+'</optgroup>'; });
+  sel.innerHTML=h;
+}
+renderProjectSelect();
+document.getElementById('d_project').onchange=e=>{
+  def.details.projectId=e.target.value;
+  if(e.target.value){ const p=ZKData.getProjects().find(x=>x.id===e.target.value); const c=ZKData.getCustomers().find(x=>x.id===p.customerId);
+    def.details.customer=c.name; def.details.product=p.product||def.details.product;
+    if(IND_OPTS.includes(c.industry)) def.details.industry=c.industry;
+    document.getElementById('d_customer').value=def.details.customer; document.getElementById('d_product').value=def.details.product; document.getElementById('d_industry').value=def.details.industry; }
+  persist(); toast(e.target.value?'Linked to '+ZKData.projectLabel(e.target.value):'Unlinked from project');
+};
+document.getElementById('btnNewProject').onclick=()=>{
+  const custs=ZKData.getCustomers();
+  zkModal('New project','<label class="zk-label" style="margin-top:0">Customer</label><select class="zk-select" id="np_c"><option value="__new__">+ New customer…</option>'+custs.map(c=>'<option value="'+c.id+'">'+esc(c.name)+'</option>').join('')+'</select><div id="np_newc" style="display:none"><label class="zk-label">New customer name *</label><input class="zk-input" id="np_cname"><label class="zk-label">Industry</label><select class="zk-select" id="np_cind">'+opt(IND_OPTS,'Other')+'</select></div><label class="zk-label">Project name *</label><input class="zk-input" id="np_pname" placeholder="e.g. Q1 Feedback Programme">',()=>{
+    const cSel=document.getElementById('np_c').value, pname=document.getElementById('np_pname').value.trim();
+    if(!pname){ toast('Project name is required.'); return false; }
+    let custId=cSel;
+    if(cSel==='__new__'){ const cname=document.getElementById('np_cname').value.trim(); if(!cname){ toast('Customer name is required.'); return false; } custId=ZKData.createCustomer(cname,document.getElementById('np_cind').value).id; }
+    const proj=ZKData.createProject(custId,pname); def.details.projectId=proj.id;
+    const c=ZKData.getCustomers().find(x=>x.id===custId); def.details.customer=c.name;
+    document.getElementById('d_customer').value=c.name;
+    renderProjectSelect(); document.getElementById('d_project').value=proj.id; persist(); toast('Project created and linked.');
+  },'Create & link');
+  document.getElementById('np_c').onchange=e=>{ document.getElementById('np_newc').style.display=e.target.value==='__new__'?'block':'none'; };
+};
+
+/* 2 sections */
+function renderSections(){
+  const box=document.getElementById('secList');
+  box.innerHTML=def.sections.length?def.sections.map((s,i)=>{ const n=def.questions.filter(q=>q.sectionId===s.id).length;
+    return '<div class="zk-item"><div class="zk-idx">'+(i+1)+'</div><div><div class="t">'+esc(s.name)+'</div><div class="m">'+n+' question'+(n===1?'':'s')+(def.rules.some(r=>r.action==='skipSection'&&r.target===s.id)?' · has skip logic':'')+'</div></div><div class="acts">'
+      +'<button class="zk-btn sm" onclick="moveSec('+i+',-1)"'+(i?'':' disabled')+'>↑</button><button class="zk-btn sm" onclick="moveSec('+i+',1)"'+(i<def.sections.length-1?'':' disabled')+'>↓</button><button class="zk-btn sm" onclick="renameSec(\''+s.id+'\')">Rename</button><button class="zk-btn sm" onclick="dupSec(\''+s.id+'\')">Duplicate</button><button class="zk-btn sm danger" onclick="delSec(\''+s.id+'\')">Delete</button></div></div>'; }).join(''):'<div class="zk-empty">No sections yet. Add one to start.</div>';
+}
+function moveSec(i,d){ const a=def.sections; [a[i],a[i+d]]=[a[i+d],a[i]]; afterStructureChange('Section moved'); }
+document.getElementById('btnAddSection').onclick=()=>zkModal('Add section','<label class="zk-label" style="margin-top:0">Section name *</label><input class="zk-input" id="sn">',()=>{ const v=document.getElementById('sn').value.trim(); if(!v){toast('Section name is required.');return false;} def.sections.push({id:ZKStore.uid('sec'),name:v}); afterStructureChange('Section added'); },'Add');
+function renameSec(sid){ const s=def.sections.find(x=>x.id===sid); zkModal('Rename section','<label class="zk-label" style="margin-top:0">Section name *</label><input class="zk-input" id="sn" value="'+esc(s.name)+'">',()=>{ const v=document.getElementById('sn').value.trim(); if(!v){toast('Section name is required.');return false;} s.name=v; afterStructureChange('Section renamed'); },'Save'); }
+function dupSec(sid){ const s=def.sections.find(x=>x.id===sid); const ns={id:ZKStore.uid('sec'),name:s.name+' (copy)'}; def.sections.splice(def.sections.indexOf(s)+1,0,ns);
+  def.questions.filter(q=>q.sectionId===sid).forEach(q=>{ const c=JSON.parse(JSON.stringify(q)); c.id=ZKStore.uid('q'); c.sectionId=ns.id; c.options.forEach(o=>o.id=ZKStore.uid('o')); def.questions.push(c); }); afterStructureChange('Section duplicated'); }
+function delSec(sid){ const n=def.questions.filter(q=>q.sectionId===sid).length; zkConfirm('Delete this section'+(n?' and its '+n+' question(s)':'')+'?',()=>{ def.sections=def.sections.filter(s=>s.id!==sid); def.questions=def.questions.filter(q=>q.sectionId!==sid); afterStructureChange('Section deleted'); }); }
+
+/* 3 questions */
+function renderQuestions(){
+  const f=document.getElementById('qFilter'); const cur=f.value||'all';
+  f.innerHTML='<option value="all">All sections</option>'+def.sections.map(s=>'<option value="'+s.id+'"'+(cur===s.id?' selected':'')+'>'+esc(s.name)+'</option>').join(''); f.onchange=renderQuestions;
+  const box=document.getElementById('qList'); let html='';
+  def.sections.filter(s=>f.value==='all'||s.id===f.value).forEach(s=>{
+    const qs=def.questions.filter(q=>q.sectionId===s.id);
+    html+='<div class="zk-label" style="margin-top:18px">'+esc(s.name)+' · '+qs.length+'</div>';
+    html+=qs.length?qs.map((q,i)=>{ const inRule=def.rules.some(r=>r.target===q.id||r.conds.some(c=>c.qid===q.id)); const gi=def.questions.indexOf(q);
+      return '<div class="zk-item"><div class="zk-idx">'+(gi+1)+'</div><div><div class="t">'+esc(q.text)+'</div><div class="m"><span class="zk-chip">'+esc(q.type)+'</span>'+(q.required?'<span class="zk-chip g">Required</span>':'<span class="zk-chip">Optional</span>')+(ZKData.CHOICE.includes(q.type)?'<span class="zk-chip c">'+q.options.length+' options</span>':'')+(inRule?'<span class="zk-chip o">Logic</span>':'')+'</div></div><div class="acts">'
+        +'<button class="zk-btn sm" onclick="moveQ(\''+q.id+'\',-1)"'+(i?'':' disabled')+'>↑</button><button class="zk-btn sm" onclick="moveQ(\''+q.id+'\',1)"'+(i<qs.length-1?'':' disabled')+'>↓</button><button class="zk-btn sm" onclick="editQ(\''+q.id+'\')">Edit</button><button class="zk-btn sm" onclick="dupQ(\''+q.id+'\')">Duplicate</button><button class="zk-btn sm danger" onclick="delQ(\''+q.id+'\')">Delete</button></div></div>'; }).join(''):'<div class="zk-empty">No questions in this section.</div>';
+  });
+  box.innerHTML=def.sections.length?html:'<div class="zk-empty">Add a section first.</div>';
+}
+function moveQ(qid,d){ const q=qById(qid); const sib=def.questions.filter(x=>x.sectionId===q.sectionId); const j=sib.indexOf(q)+d; if(j<0||j>=sib.length) return; const a=def.questions,x=a.indexOf(q),y=a.indexOf(sib[j]); [a[x],a[y]]=[a[y],a[x]]; afterStructureChange('Question moved'); }
+function qForm(q){ q=q||{text:'',help:'',sectionId:def.sections[0]&&def.sections[0].id,type:'Single Choice',required:true,scaleMax:5};
+  return '<label class="zk-label" style="margin-top:0">Question text *</label><textarea class="zk-textarea" id="fq_t" rows="2">'+esc(q.text)+'</textarea><label class="zk-label">Help text (optional)</label><input class="zk-input" id="fq_h" value="'+esc(q.help||'')+'">'
+   +'<div class="zk-grid2"><div><label class="zk-label">Section</label><select class="zk-select" id="fq_s">'+def.sections.map(s=>'<option value="'+s.id+'"'+(s.id===q.sectionId?' selected':'')+'>'+esc(s.name)+'</option>').join('')+'</select></div><div><label class="zk-label">Question type</label><select class="zk-select" id="fq_y">'+opt(ZKData.TYPES,q.type)+'</select></div></div>'
+   +'<label class="zk-check"><input type="checkbox" id="fq_r"'+(q.required?' checked':'')+'> Required</label>'; }
+document.getElementById('btnAddQ').onclick=()=>{ if(!def.sections.length){toast('Add a section first.');return;} zkModal('Add question',qForm(),()=>{ const t=document.getElementById('fq_t').value.trim(); if(!t){toast('Question text is required.');return false;}
+  const type=document.getElementById('fq_y').value; const q={id:ZKStore.uid('q'),text:t,help:document.getElementById('fq_h').value.trim(),sectionId:document.getElementById('fq_s').value,type:type,required:document.getElementById('fq_r').checked,options:ZKData.CHOICE.includes(type)?[{id:ZKStore.uid('o'),text:'Option 1'},{id:ZKStore.uid('o'),text:'Option 2'}]:[],scaleMax:5};
+  def.questions.push(q); afterStructureChange('Question added'); },'Add'); };
+function editQ(qid){ const q=qById(qid); zkModal('Edit question',qForm(q),()=>{ const t=document.getElementById('fq_t').value.trim(); if(!t){toast('Question text is required.');return false;}
+  const was=ZKData.CHOICE.includes(q.type); q.text=t; q.help=document.getElementById('fq_h').value.trim(); q.sectionId=document.getElementById('fq_s').value; q.type=document.getElementById('fq_y').value; q.required=document.getElementById('fq_r').checked;
+  const is=ZKData.CHOICE.includes(q.type); if(is&&!was&&!q.options.length) q.options=[{id:ZKStore.uid('o'),text:'Option 1'},{id:ZKStore.uid('o'),text:'Option 2'}]; if(!is) q.options=[]; afterStructureChange('Question updated'); },'Save changes'); }
+function dupQ(qid){ const q=qById(qid),c=JSON.parse(JSON.stringify(q)); c.id=ZKStore.uid('q'); c.text=q.text+' (copy)'; c.options.forEach(o=>o.id=ZKStore.uid('o')); def.questions.splice(def.questions.indexOf(q)+1,0,c); afterStructureChange('Question duplicated'); }
+function delQ(qid){ zkConfirm('Delete this question and its answer options?',()=>{ def.questions=def.questions.filter(q=>q.id!==qid); afterStructureChange('Question deleted'); }); }
+
+/* Excel / CSV */
+document.getElementById('btnTemplate').onclick=zkDownloadCsvTemplate;
+document.getElementById('btnExport').onclick=()=>{ const rows=[['Section','Question','Type','Options','Required']].concat(def.questions.map(q=>[secName(q.sectionId),q.text,q.type,q.options.map(o=>o.text).join('|'),q.required?'Y':'N']));
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=ZKData.slugify(def.details.title)+'-questions.csv'; a.click(); };
+document.getElementById('btnImport').onclick=()=>{ const inp=document.getElementById('importFile'),file=inp.files[0]; if(!file){toast('Choose a .xlsx, .xls or .csv file first.');return;}
+  zkParseQuestionFile(file,rows=>{ let add=0,upd=0,secs=0;
+    rows.forEach(r=>{ const g=k=>String(r[k]!=null?r[k]:(r[k.toLowerCase()]!=null?r[k.toLowerCase()]:'')).trim(); const text=g('Question'); if(!text) return;
+      let tp=g('Type'); tp=ZKData.TYPES.find(t=>t.toLowerCase()===tp.toLowerCase())||'Text'; const sn=g('Section')||'General'; let sec=def.sections.find(s=>s.name.toLowerCase()===sn.toLowerCase()); if(!sec){ sec={id:ZKStore.uid('sec'),name:sn}; def.sections.push(sec); secs++; }
+      const opts=g('Options')?g('Options').split('|').map(s=>s.trim()).filter(Boolean):[]; const req=!/^n/i.test(g('Required')||'Y'); const ex=def.questions.find(q=>q.text.trim().toLowerCase()===text.toLowerCase());
+      if(ex){ ex.type=tp; ex.sectionId=sec.id; ex.required=req; if(opts.length) ex.options=opts.map(t=>({id:ZKStore.uid('o'),text:t})); upd++; }
+      else { def.questions.push({id:ZKStore.uid('q'),text:text,help:'',sectionId:sec.id,type:tp,required:req,scaleMax:5,options:ZKData.CHOICE.includes(tp)?opts.map(t=>({id:ZKStore.uid('o'),text:t})):[]}); add++; } });
+    inp.value=''; afterStructureChange('Import complete — '+add+' added, '+upd+' updated'+(secs?', '+secs+' section(s) created':'')); }); };
+
+/* 4 answer options */
+function choiceQs(){ return def.questions.filter(q=>ZKData.CHOICE.includes(q.type)); }
+function renderOptions(){
+  const sel=document.getElementById('optQ'), cq=choiceQs();
+  if(!cq.length){ sel.innerHTML='<option>No choice questions yet</option>'; optQ=null; }
+  else { if(!optQ||!qById(optQ)||!ZKData.CHOICE.includes(qById(optQ).type)) optQ=cq[0].id; sel.innerHTML=cq.map(q=>'<option value="'+q.id+'"'+(q.id===optQ?' selected':'')+'>'+esc(q.text.length>70?q.text.slice(0,70)+'…':q.text)+'</option>').join(''); }
+  sel.onchange=()=>{ optQ=sel.value; renderOptions(); };
+  const q=optQ&&qById(optQ), L=document.getElementById('optList'), S=document.getElementById('optSettings');
+  ['btnAddOpt','btnBulkOpt','btnAddOther'].forEach(b=>document.getElementById(b).disabled=!q);
+  if(!q){ L.innerHTML='<div class="zk-empty">Add a Single Choice, Multiple Choice, Dropdown, Image Choice or Ranking question in the Questions tab.</div>'; S.innerHTML=''; document.getElementById('optSub').textContent='Choice questions have answer options; other types are answered directly.'; return; }
+  L.innerHTML=q.options.length?q.options.map((o,i)=>'<div class="zk-item"><div class="zk-idx">'+(i+1)+'</div><div class="t">'+esc(o.text)+'</div><div class="acts"><button class="zk-btn sm" onclick="moveOpt('+i+',-1)"'+(i?'':' disabled')+'>↑</button><button class="zk-btn sm" onclick="moveOpt('+i+',1)"'+(i<q.options.length-1?'':' disabled')+'>↓</button><button class="zk-btn sm" onclick="editOpt(\''+o.id+'\')">Edit</button><button class="zk-btn sm danger" onclick="delOpt(\''+o.id+'\')">Delete</button></div></div>').join(''):'<div class="zk-empty">No options yet.</div>';
+  document.getElementById('optSub').textContent=q.type+' · '+secName(q.sectionId);
+  S.innerHTML='<label class="zk-check"><input type="checkbox" id="s_req"'+(q.required?' checked':'')+'> Required question</label><label class="zk-check"><input type="checkbox" id="s_rnd"'+(q.randomise?' checked':'')+'> Randomise option order for each respondent</label><div class="zk-note">'+(q.type==='Multiple Choice'?'Respondents can select several options.':q.type==='Ranking'?'Respondents tap options in order of preference.':'Respondents choose one option.')+' Change the type in the Questions tab.</div>';
+  document.getElementById('s_req').onchange=e=>{ q.required=e.target.checked; persist(); }; document.getElementById('s_rnd').onchange=e=>{ q.randomise=e.target.checked; persist(); };
+}
+function curQ(){ return qById(optQ); }
+function moveOpt(i,d){ const a=curQ().options; [a[i],a[i+d]]=[a[i+d],a[i]]; persist(); renderOptions(); }
+document.getElementById('btnAddOpt').onclick=()=>zkModal('Add answer option','<label class="zk-label" style="margin-top:0">Option text *</label><input class="zk-input" id="ot">',()=>{ const v=document.getElementById('ot').value.trim(); if(!v){toast('Option text is required.');return false;} curQ().options.push({id:ZKStore.uid('o'),text:v}); persist(); renderOptions(); toast('Option added'); },'Add');
+document.getElementById('btnBulkOpt').onclick=()=>zkModal('Add several options','<label class="zk-label" style="margin-top:0">One option per line</label><textarea class="zk-textarea" id="ot" rows="6"></textarea>',()=>{ const v=document.getElementById('ot').value.split('\n').map(s=>s.trim()).filter(Boolean); if(!v.length){toast('Enter at least one option.');return false;} v.forEach(t=>curQ().options.push({id:ZKStore.uid('o'),text:t})); persist(); renderOptions(); toast(v.length+' options added'); },'Add');
+document.getElementById('btnAddOther').onclick=()=>{ const q=curQ(); if(q.options.some(o=>/^other/i.test(o.text))){toast('An “Other” option already exists.');return;} q.options.push({id:ZKStore.uid('o'),text:'Other'}); persist(); renderOptions(); };
+function editOpt(oid){ const o=curQ().options.find(x=>x.id===oid); zkModal('Edit answer option','<label class="zk-label" style="margin-top:0">Option text *</label><input class="zk-input" id="ot" value="'+esc(o.text)+'">',()=>{ const v=document.getElementById('ot').value.trim(); if(!v){toast('Option text is required.');return false;} o.text=v; persist(); renderOptions(); toast('Option updated'); },'Save'); }
+function delOpt(oid){ zkConfirm('Delete this answer option?',()=>{ const q=curQ(); q.options=q.options.filter(o=>o.id!==oid); const n=q.options.length; persist(); renderOptions(); toast('Option deleted'); }); }
+
+/* 5 logic */
+function opLabel(op){ return (ZKData.OPS.find(o=>o[0]===op)||[])[1]||op; }
+function ruleText(r){
+  const cs=r.conds.map(c=>'<b class="k">IF</b> “'+esc((qById(c.qid)||{text:'(missing question)'}).text.slice(0,60))+'” '+opLabel(c.op)+(/answered/.test(c.op)?'':' <b>'+esc(c.value)+'</b>')).join('<br><b class="k">'+r.logic+'</b> ').replace(/<b class="k">IF<\/b>/g,(m,off,str)=>m).replace(/<br><b class="k">(AND|OR)<\/b> <b class="k">IF<\/b>/g,'<br><b class="k">$1</b>');
+  const t=r.action==='show'?'SHOW question':r.action==='hide'?'HIDE question':r.action==='skipSection'?'SKIP section':r.action==='end'?'END survey':'REDIRECT to';
+  const tg=r.action==='show'||r.action==='hide'?' “'+esc((qById(r.target)||{text:'(missing)'}).text.slice(0,60))+'”':r.action==='skipSection'?' “'+esc(secName(r.target))+'”':r.action==='redirect'?' '+esc(r.target):'';
+  return cs+'<br><b class="a">→ '+t+'</b>'+tg;
+}
+function renderRules(){ const box=document.getElementById('ruleList');
+  box.innerHTML=def.rules.length?def.rules.map((r,i)=>'<div class="zk-rule"><div class="line">'+ruleText(r)+'</div><div style="margin-top:8px;display:flex;gap:6px"><button class="zk-btn sm" onclick="editRule(\''+r.id+'\')">Edit</button><button class="zk-btn sm danger" onclick="delRule(\''+r.id+'\')">Delete</button></div></div>').join(''):'<div class="zk-empty">No rules yet. Example: IF “Purchase intent” equals “Definitely” → SHOW “Lead capture”.</div>'; }
+function delRule(rid){ zkConfirm('Delete this rule?',()=>{ def.rules=def.rules.filter(r=>r.id!==rid); persist(); renderRules(); toast('Rule deleted'); }); }
+document.getElementById('btnAddRule').onclick=()=>openRule();
+function editRule(rid){ openRule(def.rules.find(r=>r.id===rid)); }
+function openRule(r){
+  if(def.questions.length<2){ toast('Add at least two questions before creating logic.'); return; }
+  const d=r?JSON.parse(JSON.stringify(r)):{id:ZKStore.uid('r'),logic:'AND',conds:[{qid:def.questions[0].id,op:'equals',value:''}],action:'show',target:def.questions[1].id};
+  function valueInput(c,i){ const q=qById(c.qid); if(/answered/.test(c.op)) return '<div class="muted" style="font-size:12px;padding:12px 0">no value needed</div>';
+    const ch=q&&(ZKData.CHOICE.includes(q.type)?q.options.map(o=>o.text):q.type==='Yes / No'?['Yes','No']:null);
+    return ch?'<select class="zk-select" data-c="'+i+'" data-f="value"><option value="">Choose…</option>'+opt(ch,c.value)+'</select>':'<input class="zk-input" data-c="'+i+'" data-f="value" value="'+esc(c.value)+'" placeholder="value">'; }
+  function draw(){ const qOpts=def.questions.map(q=>[q.id,q.text.slice(0,70)]);
+    const sel=(arr,v)=>arr.map(a=>'<option value="'+a[0]+'"'+(a[0]===v?' selected':'')+'>'+esc(a[1])+'</option>').join('');
+    let h=d.conds.map((c,i)=>'<div style="margin-bottom:10px"><div class="zk-label" style="margin:0 0 4px">'+(i===0?'IF':d.logic)+'</div><div class="zk-grid3" style="grid-template-columns:2fr 1.2fr 1.4fr auto;align-items:start"><select class="zk-select" data-c="'+i+'" data-f="qid">'+sel(qOpts,c.qid)+'</select><select class="zk-select" data-c="'+i+'" data-f="op">'+sel(ZKData.OPS,c.op)+'</select>'+valueInput(c,i)+(d.conds.length>1?'<button class="zk-btn sm danger" data-rm="'+i+'">✕</button>':'<span></span>')+'</div></div>').join('');
+    h+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="zk-btn sm" id="rAddC">+ Add condition</button>'+(d.conds.length>1?'<span class="muted" style="font-size:12px">Match</span><select class="zk-select" id="rLogic" style="width:auto"><option value="AND"'+(d.logic==='AND'?' selected':'')+'>ALL conditions (AND)</option><option value="OR"'+(d.logic==='OR'?' selected':'')+'>ANY condition (OR)</option></select>':'')+'</div>';
+    h+='<label class="zk-label">Then</label><select class="zk-select" id="rAct">'+sel(ZKData.ACTIONS,d.action)+'</select>';
+    if(d.action==='show'||d.action==='hide') h+='<label class="zk-label">Question</label><select class="zk-select" id="rTgt">'+sel(qOpts,d.target)+'</select>';
+    if(d.action==='skipSection') h+='<label class="zk-label">Section</label><select class="zk-select" id="rTgt">'+sel(def.sections.map(s=>[s.id,s.name]),d.target)+'</select>';
+    if(d.action==='redirect') h+='<label class="zk-label">Redirect URL</label><input class="zk-input" id="rTgt" placeholder="https://…" value="'+esc(d.target)+'">';
+    document.getElementById('ruleBox').innerHTML=h; bind(); }
+  function bind(){ const box=document.getElementById('ruleBox');
+    box.querySelectorAll('[data-c]').forEach(el=>el.onchange=el.oninput=()=>{ const c=d.conds[+el.dataset.c],f=el.dataset.f; c[f]=el.value; if(f==='qid'||f==='op'){ if(f==='qid') c.value=''; draw(); } });
+    box.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ d.conds.splice(+b.dataset.rm,1); draw(); });
+    box.querySelector('#rAddC').onclick=()=>{ d.conds.push({qid:def.questions[0].id,op:'equals',value:''}); draw(); };
+    const lg=box.querySelector('#rLogic'); if(lg) lg.onchange=()=>{ d.logic=lg.value; draw(); };
+    box.querySelector('#rAct').onchange=e=>{ d.action=e.target.value; d.target=d.action==='show'||d.action==='hide'?def.questions[0].id:d.action==='skipSection'?(def.sections[0]||{}).id:''; draw(); };
+    const t=box.querySelector('#rTgt'); if(t) t.onchange=t.oninput=()=>{ d.target=t.value; }; }
+  zkModal(r?'Edit rule':'Add rule','<div id="ruleBox"></div>',()=>{
+    if(d.conds.some(c=>!/answered/.test(c.op)&&String(c.value).trim()==='')){ toast('Fill in the value for every condition.'); return false; }
+    if(d.action==='redirect'&&!/^https?:\/\//i.test(d.target||'')){ toast('Enter a full URL starting with http(s)://'); return false; }
+    const mx=Math.max.apply(null,d.conds.map(c=>def.questions.findIndex(q=>q.id===c.qid)));
+    if(d.action==='show'||d.action==='hide'){ if(def.questions.findIndex(q=>q.id===d.target)<=mx){ toast('The controlled question must come after the questions in the conditions.'); return false; } }
+    if(d.action==='skipSection'){ const first=def.questions.findIndex(q=>q.sectionId===d.target); if(first>=0&&first<=mx){ toast('The section must come after the questions in the conditions.'); return false; } }
+    const i=def.rules.findIndex(x=>x.id===d.id); if(i>=0) def.rules[i]=d; else def.rules.push(d); persist(); renderRules(); toast('Rule saved'); },'Save rule');
+  draw();
+}
+
+/* 6 preview */
+function renderPreview(){
+  const mount=document.getElementById('pvMount'); mount.innerHTML='';
+  if(!def.questions.length){ mount.innerHTML='<div class="zk-empty">Add questions to preview the survey.</div>'; document.getElementById('pvTrace').innerHTML=''; return; }
+  mounted=ZKData.mountRunner(mount,def,{preview:true,onTrace:(c,st)=>{ const tr=document.getElementById('pvTrace');
+    tr.innerHTML='<b>'+c.vis.length+'</b> of '+def.questions.length+' questions currently visible'+(c.ended?'<br><span style="color:#fcd34d">Survey ends early'+(c.redirect?' and redirects':'')+' based on your answers.</span>':'')
+      +(c.hidden.length?'<br><br><b>Hidden now</b><br>'+c.hidden.map(h=>'• '+esc(h.q.text.slice(0,55))+'<br><span style="color:#7d87a6">&nbsp;&nbsp;'+h.why+'</span>').join('<br>'):'<br><br>No questions hidden.')+'</div>'; }});
+}
+document.getElementById('pvRestart').onclick=()=>renderPreview();
+document.getElementById('pvDesk').onclick=()=>document.getElementById('pvFrame').classList.remove('mobile');
+document.getElementById('pvMob').onclick=()=>document.getElementById('pvFrame').classList.add('mobile');
+
+/* 7 publish */
+function uniqueSlug(){ const base=ZKData.slugify(def.details.title); let s=base,n=1; while(list.some(x=>x.id!==id&&ZKData.getDef(x.id).publish.slug===s) || (typeof ZKAuth!=='undefined'&&ZKAuth.slugTaken(s))) s=base+'-'+(++n); return s; }
+function runUrl(extra){ return new URL('../public/run.html?s='+encodeURIComponent(def.publish.slug)+(extra||''),location.href).href; }
+function renderPublish(){
+  const st=def.publish.status, checks=ZKData.validate(def), bad=checks.filter(c=>c.level==='bad').length;
+  const step=(n,t,s,cls)=>'<div class="s '+cls+'"><b>'+n+'. '+t+'</b>'+s+'</div>';
+  const live=st==='Published', vd=!!def.publish.validatedAt&&!bad;
+  document.getElementById('flow').innerHTML=step(1,'Draft','Build the survey',st==='Draft'&&!vd?'now':'done')+step(2,'Validate','Checklist passes',live?'done':vd?'now':'')+step(3,'Published','Live link active',live?'now':'')+step(4,st==='Archived'?'Archived':'Closed','Unpublish or archive',st==='Unpublished'||st==='Archived'?'now':'');
+  document.getElementById('checks').innerHTML=checks.map(c=>'<div class="zk-check-row '+c.level+'"><span class="ic">'+(c.level==='ok'?'✓':c.level==='bad'?'✕':'!')+'</span><span>'+esc(c.text)+'</span></div>').join('');
+  const b=document.getElementById('pubBtns'); let h='';
+  h+='<button class="zk-btn" id="bVal">Run validation</button>';
+  if(st==='Draft'||st==='Unpublished') h+='<button class="zk-btn primary" id="bPub"'+(bad?' disabled':'')+'>'+(st==='Draft'?'Publish survey':'Republish')+'</button>';
+  if(st==='Published') h+='<button class="zk-btn" id="bUn">Unpublish</button>';
+  if(st!=='Archived') h+='<button class="zk-btn danger" id="bArc">Archive</button>'; else h+='<button class="zk-btn" id="bRes">Restore to draft</button>';
+  b.innerHTML=h;
+  const on=(i,f)=>{ const e=document.getElementById(i); if(e) e.onclick=f; };
+  on('bVal',()=>{ def.publish.validatedAt=bad?null:Date.now(); persist(); renderPublish(); toast(bad?bad+' issue(s) to fix before publishing.':'Validation passed.'); });
+  on('bPub',()=>{ if(typeof ZKAuth!=='undefined' && def.publish.status!=='Published'){ const a=ZKAuth.current(), pl=ZKAuth.planOf(a); if(a&&a.role!=='superadmin' && ZKData.usage().responses>=pl.responses){ toast('Your '+pl.name+' plan response limit ('+pl.responses+') is used up. Upgrade to keep collecting.'); return; } } def.publish.validatedAt=Date.now(); if(!def.publish.slug) def.publish.slug=uniqueSlug(); def.publish.status='Published'; def.publish.publishedAt=Date.now(); if(!persist()){ renderPublish(); toast(ZKData.lastError()); return; } renderPublish(); toast('Survey published.'); });
+  on('bUn',()=>{ def.publish.status='Unpublished'; persist(); renderPublish(); toast('Survey unpublished — the public link is now closed.'); });
+  on('bArc',()=>zkConfirm('Archive this survey? Its public link will close.',()=>{ def.publish.status='Archived'; persist(); renderPublish(); toast('Survey archived.'); }));
+  on('bRes',()=>{ def.publish.status='Draft'; persist(); renderPublish(); toast('Restored to draft.'); });
+  const d=document.getElementById('dist');
+  if(!def.publish.slug){ d.innerHTML='<div class="zk-empty">Publish the survey to get a shareable link, campaign links and responses.</div>'; return; }
+  const n=ZKData.getResponses(id).length;
+  d.innerHTML='<label class="zk-label" style="margin-top:0">Survey link'+(st==='Published'?'':' (closed)')+'</label><div class="zk-code" id="lnk">'+esc(runUrl())+'</div>'
+   +'<div class="zk-grid3" style="margin-top:12px;grid-template-columns:1fr 1fr 1fr"><div><label class="zk-label" style="margin-top:0">Source</label><select class="zk-select" id="u_s">'+opt(['instagram','facebook','youtube','twitter','whatsapp','meta_ads','email','qr','website'],'instagram')+'</select></div><div><label class="zk-label" style="margin-top:0">Medium</label><select class="zk-select" id="u_m">'+opt(['social','paid','organic','referral','email','offline'],'social')+'</select></div><div><label class="zk-label" style="margin-top:0">Campaign</label><input class="zk-input" id="u_c" value="'+esc(def.publish.slug.replace(/-/g,'_')+'_prelaunch')+'"></div></div>'
+   +'<label class="zk-label">Campaign link with UTM</label><div class="zk-code" id="utm"></div>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="zk-btn" id="cpy">Copy campaign link</button>'+(st==='Published'?'<a class="zk-btn primary" target="_blank" href="'+esc(runUrl())+'">Open public survey ↗</a>':'')+'<a class="zk-btn primary" href="distribute.html?survey='+id+'">Poster &amp; channel kits</a> <a class="zk-btn" href="campaign-builder.html?survey='+id+'">Create campaign</a> <a class="zk-btn" href="segments.html?survey='+id+'">Segments</a></div>'
+   +'<div class="zk-note" style="margin-top:14px"><b>'+n+'</b> response'+(n===1?'':'s')+' collected and stored on the server.</div>';
+  const upd=()=>{ document.getElementById('utm').textContent=runUrl('&utm_source='+document.getElementById('u_s').value+'&utm_medium='+document.getElementById('u_m').value+'&utm_campaign='+encodeURIComponent(document.getElementById('u_c').value)); };
+  ['u_s','u_m','u_c'].forEach(i=>document.getElementById(i).oninput=upd); upd();
+  document.getElementById('cpy').onclick=()=>{ const t=document.getElementById('utm').textContent; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Link copied'),()=>toast('Select the link and copy it manually.')); };
+}
+
+function renderAll(){ renderChip(); if(curTab===1) renderSections(); if(curTab===2) renderQuestions(); if(curTab===3) renderOptions(); if(curTab===4) renderRules(); if(curTab===5) renderPreview(); if(curTab===6) renderPublish(); }
+normalize(); tab(0);
+</script><script src="../js/shell.js"></script></body></html>

@@ -1,0 +1,70 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Segments — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Research</div><h1>Segments</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"></div></div>
+
+<p class="muted" style="margin:-8px 0 16px">Segments are saved rules over survey answers (IF / AND / OR). Every response is matched against every segment, so a respondent can sit in more than one. Use them to compare what different groups of households need.</p>
+<div class="zk-card"><div class="zk-hdr3"><div><label class="zk-label" style="margin-top:0">Survey</label><select class="zk-select" id="sv"></select></div><div id="prog"></div><div style="text-align:right"><button class="zk-btn primary" id="addSeg">+ New segment</button></div></div></div>
+<div id="segCards" class="zk-grid2" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:16px"></div>
+<div class="zk-card" style="margin-top:16px"><h3>Compare segments</h3><p class="sub">Pick a question to see how each segment answers it (column percentages).</p><select class="zk-select" id="cq" style="max-width:520px"></select><div class="table-wrap" style="margin-top:12px"><table class="table" id="cmp"></table></div></div>
+
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const surveyOpts=sel=>ZKData.getList().map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+
+let sid=qp('survey')||(ZKData.getList().find(s=>ZKData.segmentsOf(s.id).length)||ZKData.getList()[0]).id;
+const OPS=ZKData.OPS;
+function valField(qid,val){ const q=ZKData.getDef(sid).questions.find(x=>x.id===qid); if(q&&(ZKData.CHOICE.includes(q.type)||q.type==='Yes / No')){ const o=q.type==='Yes / No'?['Yes','No']:q.options.map(x=>x.text); return '<select class="zk-select cv">'+o.map(x=>'<option'+(x===val?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>'; } return '<input class="zk-input cv" value="'+esc(val||'')+'">'; }
+function condRow(c){ const def=ZKData.getDef(sid); return '<div class="zk-row crow" style="gap:6px;margin-bottom:6px;flex-wrap:wrap"><select class="zk-select cq" style="flex:2;min-width:160px">'+def.questions.map(q=>'<option value="'+q.id+'"'+(q.id===c.qid?' selected':'')+'>'+esc(q.text.slice(0,60))+'</option>').join('')+'</select><select class="zk-select co" style="flex:1;min-width:110px">'+OPS.map(o=>'<option value="'+o[0]+'"'+(o[0]===c.op?' selected':'')+'>'+o[1]+'</option>').join('')+'</select><span class="cvw" style="flex:2;min-width:140px">'+valField(c.qid,c.value)+'</span><button type="button" class="zk-btn sm danger rm">✕</button></div>'; }
+function wire(){ document.querySelectorAll('.crow').forEach(r=>{ r.querySelector('.cq').onchange=e=>{ r.querySelector('.cvw').innerHTML=valField(e.target.value,''); }; r.querySelector('.rm').onclick=()=>r.remove(); }); }
+function editSeg(seg){
+  const def=ZKData.getDef(sid); if(!def.questions.length){ toast('Add questions to this survey first.'); return; }
+  seg=seg||{id:null,name:'',desc:'',logic:'AND',conds:[{qid:def.questions[0].id,op:'equals',value:''}]};
+  zkModal(seg.id?'Edit segment':'New segment','<label class="zk-label" style="margin-top:0">Segment name *</label><input class="zk-input" id="sg_n" value="'+esc(seg.name)+'"><label class="zk-label">Description</label><input class="zk-input" id="sg_d" value="'+esc(seg.desc)+'"><label class="zk-label">A respondent belongs when</label><select class="zk-select" id="sg_l" style="max-width:260px"><option value="AND"'+(seg.logic==='AND'?' selected':'')+'>ALL conditions match (AND)</option><option value="OR"'+(seg.logic==='OR'?' selected':'')+'>ANY condition matches (OR)</option></select><label class="zk-label">Conditions</label><div id="sg_c">'+seg.conds.map(condRow).join('')+'</div><button type="button" class="zk-btn sm" id="sg_add">+ Add condition</button>',()=>{
+    const name=ZG('sg_n').value.trim(); if(!name){ toast('Give the segment a name.'); return false; }
+    const conds=[...document.querySelectorAll('#sg_c .crow')].map(r=>({qid:r.querySelector('.cq').value,op:r.querySelector('.co').value,value:r.querySelector('.cv').value}));
+    if(!conds.length){ toast('Add at least one condition.'); return false; }
+    def.segments=def.segments||[]; const rec={id:seg.id||ZKStore.uid('seg'),name:name,desc:ZG('sg_d').value.trim(),logic:ZG('sg_l').value,conds:conds};
+    const i=def.segments.findIndex(x=>x.id===rec.id); if(i>=0) def.segments[i]=rec; else def.segments.push(rec);
+    ZKData.saveDef(sid,def); render(); toast('Segment saved.'); });
+  wire(); ZG('sg_add').onclick=()=>{ ZG('sg_c').insertAdjacentHTML('beforeend',condRow({qid:def.questions[0].id,op:'equals',value:''})); wire(); };
+}
+function render(){
+  ZG('sv').innerHTML=surveyOpts(sid);
+  const def=ZKData.getDef(sid), st=ZKData.segmentStats(sid), n=ZKData.getResponses(sid).length, t=def.details.targetSample||0, demo=ZKData.demoCount(sid);
+  ZG('prog').innerHTML='<label class="zk-label" style="margin-top:0">Sample progress</label><div style="background:#0c1122;border:1px solid var(--line);border-radius:99px;height:12px;overflow:hidden"><div style="height:100%;width:'+(t?Math.min(100,Math.round(n/t*100)):0)+'%;background:linear-gradient(90deg,#8b7cff,#38d0ff)"></div></div><div class="muted" style="font-size:12px;margin-top:4px">'+n+(t?' of '+t+' target':' responses')+(demo?' · <span class="zk-chip o">'+demo+' demo</span>':'')+'</div>';
+  ZG('segCards').innerHTML = st.length ? st.map(s=>'<div class="zk-card"><div class="zk-row"><h3>'+esc(s.seg.name)+'</h3><span><button class="zk-btn sm" data-e="'+s.seg.id+'">Edit</button> <button class="zk-btn sm danger" data-d="'+s.seg.id+'">✕</button></span></div><p class="sub">'+esc(s.seg.desc||'')+'</p><div style="font-size:30px;font-weight:800;color:#fff">'+s.n+' <span class="muted" style="font-size:14px;font-weight:600">respondents · '+s.pct+'%</span></div><div style="margin-top:10px;font-size:13px;color:#cfd6ee">Positive intent: <b>'+(s.intentPct==null?'—':s.intentPct+'%')+'</b><br>Leads captured: <b>'+s.leads+'</b><br>Top problem: <b>'+(s.topPain?esc(s.topPain.text)+' ('+s.topPain.pct+'%)':'—')+'</b></div><div class="muted" style="font-size:11px;margin-top:8px">Rule: '+s.seg.logic+' of '+s.seg.conds.length+' condition(s)</div></div>').join('') : '<div class="zk-empty" style="grid-column:1/-1">No segments yet for this survey. Create one, or start from the Coimbatore template which ships with segments A–D.</div>';
+  document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>editSeg(def.segments.find(x=>x.id===b.dataset.e)));
+  document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>zkConfirm('Delete this segment? Responses are not affected.',()=>{ def.segments=def.segments.filter(x=>x.id!==b.dataset.d); ZKData.saveDef(sid,def); render(); toast('Segment deleted.'); }));
+  const cqs=def.questions.filter(q=>ZKData.CHOICE.includes(q.type)||q.type==='Yes / No'); const cur=ZG('cq').value;
+  ZG('cq').innerHTML=cqs.map(q=>'<option value="'+q.id+'">'+esc(q.text.slice(0,90))+'</option>').join(''); 
+  if(cur&&cqs.some(q=>q.id===cur)) ZG('cq').value=cur; else { const iq=cqs.find(q=>/try a new|likely are you/i.test(q.text)); if(iq) ZG('cq').value=iq.id; }
+  renderCmp();
+}
+function renderCmp(){ const x=ZG('cq').value?ZKData.segmentCrossTab(sid,ZG('cq').value):null; if(!x||!x.cols.length){ ZG('cmp').innerHTML='<tbody><tr><td class="muted">Create a segment and pick a choice question to compare.</td></tr></tbody>'; return; }
+  ZG('cmp').innerHTML='<thead><tr><th>Answer</th>'+x.cols.map(c=>'<th>'+esc(c.seg.name)+'<div class="muted" style="font-weight:400">n='+c.n+'</div></th>').join('')+'</tr></thead><tbody>'+x.opts.map(o=>'<tr><td>'+esc(o)+'</td>'+x.cols.map(c=>{ const v=c.row[o]; return '<td><b>'+v+'%</b></td>'; }).join('')+'</tr>').join('')+'</tbody>'; }
+ZG('sv').onchange=e=>{ sid=e.target.value; render(); };
+ZG('cq').onchange=renderCmp; ZG('addSeg').onclick=()=>editSeg();
+render();
+
+</script><script src="../js/shell.js"></script></body></html>

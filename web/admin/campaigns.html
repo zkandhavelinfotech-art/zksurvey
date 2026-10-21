@@ -1,0 +1,41 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Campaigns — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Growth</div><h1>Campaigns</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="zk-btn primary" href="campaign-builder.html">+ New campaign</a></div></div>
+
+<p class="muted" style="margin:-8px 0 16px">A campaign ties a survey to a channel, dates, budget and audience, and produces a tagged link and QR code. Response and lead counts come from the UTM tag in collected responses.</p>
+<div class="zk-card"><h3>Campaigns</h3><p class="sub">Planned and running campaigns</p><div id="empty" class="zk-empty" style="display:none">No campaigns yet. Create one to get a tracked link and QR code.</div><div class="table-wrap"><table class="table" id="tbl"></table></div></div>
+<div class="zk-card" style="margin-top:16px"><h3>Tags seen in responses</h3><p class="sub">Every distinct utm_campaign found in collected responses — including links you built by hand.</p><div class="table-wrap"><table class="table"><thead><tr><th>Campaign tag</th><th>Source</th><th>Medium</th><th>Survey</th><th>Responses</th><th>Active</th></tr></thead><tbody id="seen"></tbody></table></div></div>
+
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const surveyOpts=sel=>ZKData.getList().map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+
+function draw(){ const cs=ZKData.getCampaigns(); ZG('empty').style.display=cs.length?'none':'block'; ZG('tbl').style.display=cs.length?'':'none';
+  ZG('tbl').innerHTML='<thead><tr><th>Campaign</th><th>Survey</th><th>Channel</th><th>Dates</th><th>Budget</th><th>Responses</th><th>Leads</th><th>Cost / lead</th><th>Status</th><th></th></tr></thead><tbody>'+cs.map(c=>{ const st=ZKData.campaignStats(c), sv=ZKData.getList().find(s=>s.id===c.surveyId); return '<tr><td><b>'+esc(c.name)+'</b><div class="muted" style="font-size:12px">'+esc(c.customer||'')+'</div></td><td>'+esc(sv?sv.name:'—')+'</td><td><span class="zk-chip c">'+esc(c.channel)+'</span></td><td>'+fmtD(c.start)+' – '+fmtD(c.end)+'</td><td>'+(c.budget?'₹'+Number(c.budget).toLocaleString('en-IN'):'—')+'</td><td>'+st.responses+'</td><td>'+st.leads+'</td><td>'+(st.cpl?'₹'+st.cpl:'—')+'</td><td><span class="zk-chip '+(c.status==='Active'?'g':c.status==='Completed'?'':'o')+'">'+esc(c.status)+'</span></td><td style="white-space:nowrap"><a class="zk-btn sm" href="campaign-builder.html?id='+c.id+'">Open</a> <button class="zk-btn sm danger" data-d="'+c.id+'">✕</button></td></tr>'; }).join('')+'</tbody>';
+  document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>zkConfirm('Delete this campaign? Collected responses are kept.',()=>{ ZKData.saveCampaigns(ZKData.getCampaigns().filter(x=>x.id!==b.dataset.d)); draw(); toast('Campaign deleted.'); })); }
+draw();
+const a=ZKData.allAttribution();
+ZG('seen').innerHTML=a.campaigns.length?a.campaigns.map(c=>'<tr><td><b>'+esc(c.campaign)+'</b></td><td><span class="zk-chip c">'+esc(c.source)+'</span></td><td>'+esc(c.medium||'—')+'</td><td>'+esc(c.surveys.join(', '))+'</td><td>'+c.n+'</td><td>'+fmtD(c.first)+' – '+fmtD(c.last)+'</td></tr>').join(''):'<tr><td colspan="6" class="muted">No tagged responses yet.</td></tr>';
+
+</script><script src="../js/shell.js"></script></body></html>

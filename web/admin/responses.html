@@ -1,0 +1,68 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Responses — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Admin</div><h1>Responses</h1></div><div style="display:flex;gap:8px"><button class="zk-btn" id="btnExport">Export CSV</button><select class="zk-select" id="surveySel" style="width:auto;min-width:260px"></select></div></div>
+<div class="zk-grid3" id="kpis" style="margin-bottom:18px"></div>
+<div class="zk-card"><h3>All responses</h3><p class="sub">Real answers captured by the public survey link, plus seeded demo data for published surveys so this screen is not empty. Click a row to see every answer.</p><div class="table-wrap"><table class="table"><thead><tr><th>When</th><th>Survey</th><th>Channel</th><th>Snapshot</th><th>Lead?</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></div>
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+const esc=ZKData.esc, list=ZKData.getList();
+const sel=document.getElementById('surveySel');
+sel.innerHTML='<option value="all">All surveys</option>'+list.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('');
+sel.onchange=render;
+function fmt(t){ return new Date(t).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function snapshot(def,r){
+  const q=def.questions.find(q=>r.answers[q.id]!=null && r.answers[q.id]!=='' && q.type!=='Lead Capture');
+  if(!q) return '—';
+  const a=r.answers[q.id]; const v=Array.isArray(a)?a.join(', '):(typeof a==='object'?'(lead details)':a);
+  return esc(q.text.slice(0,34))+(q.text.length>34?'…':'')+': <b>'+esc(String(v).slice(0,40))+'</b>';
+}
+function hasLead(def,r){ return def.questions.some(q=>q.type==='Lead Capture' && r.answers[q.id]); }
+function toCsv(rows,headers){ const esc2=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"'; return [headers.map(esc2).join(',')].concat(rows.map(r=>headers.map(h=>esc2(r[h])).join(','))).join('\n'); }
+function download(name,text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'})); a.download=name; a.click(); }
+document.getElementById('btnExport').onclick=()=>{
+  const scope=sel.value;
+  const items = scope==='all' ? ZKData.allResponses() : ZKData.getResponses(scope).map(r=>Object.assign({surveyId:scope, surveyName:list.find(s=>s.id===scope).name}, r));
+  if(!items.length){ toast('No responses to export.'); return; }
+  const rows = items.map(r=>{ const def=ZKData.getDef(r.surveyId); const row={When:new Date(r.at).toISOString(), Survey:r.surveyName, Source:(r.utm&&r.utm.utm_source)||'direct', Medium:(r.utm&&r.utm.utm_medium)||'', Campaign:(r.utm&&r.utm.utm_campaign)||''};
+    def.questions.forEach(q=>{ const a=r.answers[q.id]; row[q.text]= a==null?'':(Array.isArray(a)?a.join(' | '):(typeof a==='object'?Object.entries(a).filter(([k,v])=>v).map(([k,v])=>k+': '+v).join(' | '):a)); }); return row; });
+  const headers=Object.keys(rows[0]);
+  download((scope==='all'?'all-surveys':ZKData.slugify(list.find(s=>s.id===scope).name))+'-responses.csv', toCsv(rows,headers));
+  toast('Exported '+rows.length+' response(s).');
+};
+function render(){
+  const scope=sel.value;
+  const items = scope==='all' ? ZKData.allResponses() : ZKData.getResponses(scope).map(r=>Object.assign({surveyId:scope, surveyName:list.find(s=>s.id===scope).name}, r)).sort((a,b)=>b.at-a.at);
+  const totalResp = scope==='all' ? list.reduce((a,s)=>a+ZKData.getResponses(s.id).length,0) : items.length;
+  const totalStarts = scope==='all' ? list.reduce((a,s)=>a+ZKData.getStarts(s.id),0) : ZKData.getStarts(scope);
+  const rate = totalStarts? Math.round(totalResp/totalStarts*100) : 0;
+  document.getElementById('kpis').innerHTML = [['Responses',totalResp],['Starts',totalStarts],['Completion rate',rate+'%']].map(([l,v])=>'<div class="zk-card" style="margin:0"><div class="zk-label" style="margin-top:0">'+l+'</div><div style="font-size:26px;font-weight:800;color:#fff">'+v+'</div></div>').join('');
+  const box=document.getElementById('rows');
+  box.innerHTML = items.length ? items.slice(0,200).map(r=>{ const def=ZKData.getDef(r.surveyId);
+    return '<tr><td>'+fmt(r.at)+'</td><td>'+esc(r.surveyName)+'</td><td><span class="zk-chip c">'+esc((r.utm&&r.utm.utm_source)||'direct')+'</span></td><td>'+snapshot(def,r)+'</td><td>'+(hasLead(def,r)?'<span class="zk-chip g">Yes</span>':'<span class="zk-chip">No</span>')+'</td><td><button class="zk-btn sm" onclick="view(\'' + r.surveyId + '\',\'' + r.id + '\')">View</button></td></tr>'; }).join('') : '<tr><td colspan="6" class="zk-empty">No responses yet for this survey. Publish it and share the link, or open the Survey Builder preview.</td></tr>';
+}
+function view(sid,rid){
+  const def=ZKData.getDef(sid); const r=(ZKData.getResponses(sid)||[]).find(x=>x.id===rid); if(!r) return;
+  const body = def.questions.map(q=>{ const a=r.answers[q.id]; if(a==null||a===''||(Array.isArray(a)&&!a.length)) return '';
+    let v = Array.isArray(a)?a.join(', ') : (typeof a==='object'? Object.entries(a).filter(([k,v])=>v).map(([k,v])=>k+': '+v).join(' · ') : a);
+    return '<div style="margin-bottom:12px"><div class="zk-label" style="margin:0 0 3px">'+esc(q.text)+'</div><div>'+esc(String(v))+'</div></div>'; }).join('') || '<div class="zk-empty">No answers recorded.</div>';
+  zkModal('Response — '+fmt(r.at), '<div style="max-height:60vh;overflow:auto">'+body+'</div>', ()=>{}, 'Close');
+}
+render();
+</script><script src="../js/shell.js"></script></body></html>

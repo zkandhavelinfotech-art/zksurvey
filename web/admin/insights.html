@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Insights — ZKSurvey</title><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/zk.css"></head><body>
+<div class="admin-shell">
+<aside class="sidebar"><a class="logo" href="dashboard.html"><span class="logo-mark">ZK</span><span class="logo-text">ZKSurvey<small>Survey &amp; Launch Intelligence</small></span></a>
+<a class="side-link" href="dashboard.html"><span>▣</span>&nbsp; Dashboard</a>
+<a class="side-link" href="customers.html"><span>◉</span>&nbsp; Customers</a>
+<a class="side-link" href="products.html"><span>◆</span>&nbsp; Products</a>
+<a class="side-link" href="surveys.html"><span>☷</span>&nbsp; Surveys</a>
+<a class="side-link" href="questions.html"><span>?</span>&nbsp; Questions</a>
+<a class="side-link" href="campaigns.html"><span>↗</span>&nbsp; Campaigns</a>
+<a class="side-link" href="sources.html"><span>⌁</span>&nbsp; Sources</a>
+<a class="side-link" href="responses.html"><span>≡</span>&nbsp; Responses</a>
+<a class="side-link" href="leads.html"><span>♙</span>&nbsp; Leads</a>
+<a class="side-link" href="analytics.html"><span>◒</span>&nbsp; Analytics</a>
+<a class="side-link" href="insights.html"><span>✦</span>&nbsp; AI Insights</a>
+<a class="side-link" href="growth-framework.html"><span>↻</span>&nbsp; Growth Framework</a>
+<a class="side-link" href="reports.html"><span>▤</span>&nbsp; Reports</a>
+<a class="side-link" href="settings.html"><span>⚙</span>&nbsp; Settings</a></aside>
+<main class="main">
+<div class="page-head"><div><div class="muted" style="font-size:12px">ZKSurvey / Research</div><h1>Insights</h1></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="zk-btn" href="analytics.html">Analytics</a> <a class="zk-btn" href="segments.html">Segments</a></div></div>
+
+<div class="zk-note" style="margin-bottom:16px"><b>How these are made.</b> Each insight is produced by a plain counting rule over your real responses (shown under every line, with its evidence size). It is not AI. Generative narrative, recommendations and risk analysis arrive in Phase 9.</div>
+<div class="zk-card"><div class="zk-hdr2"><div><label class="zk-label" style="margin-top:0">Survey</label><select class="zk-select" id="sv"></select></div><div id="meta" class="muted" style="font-size:13px"></div></div></div>
+<div id="out" style="margin-top:16px"></div>
+
+</main></div>
+<script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/crud.js"></script><script src="../js/store.js"></script>
+<script>
+
+const esc=ZKData.esc, ZG=id=>document.getElementById(id);
+const qp=k=>new URLSearchParams(location.search).get(k);
+const surveyOpts=sel=>ZKData.getList().map(s=>'<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+const fmtD=t=>t?new Date(t).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'}):'—';
+
+let sid=qp('survey')||(ZKData.getList().find(s=>ZKData.getResponses(s.id).length)||ZKData.getList()[0]).id;
+const CATS=['Customer','Product','Marketing','Launch','Segments','Research'];
+function render(){ ZG('sv').innerHTML=surveyOpts(sid); const r=ZKData.insights(sid);
+  ZG('meta').innerHTML=r.n+' responses'+(r.demo?' · <span class="zk-chip o">'+r.demo+' demo</span>':'');
+  if(!r.n){ ZG('out').innerHTML='<div class="zk-empty">No responses yet for this survey, so there is nothing to analyse. Publish it and collect responses first.</div>'; return; }
+  ZG('out').innerHTML=CATS.map(c=>{ const L=r.list.filter(x=>x.cat===c); if(!L.length) return ''; return '<div class="zk-card" style="margin-bottom:14px"><h3>'+c+'</h3>'+L.map(x=>'<div style="padding:10px 0;border-top:1px solid var(--line)"><div style="color:#fff">'+esc(x.text)+'</div><div class="muted" style="font-size:12px;margin-top:3px">Rule: '+esc(x.rule)+' · based on '+x.n+' response'+(x.n===1?'':'s')+'</div></div>').join('')+'</div>'; }).join(''); }
+ZG('sv').onchange=e=>{ sid=e.target.value; render(); }; render();
+
+</script><script src="../js/shell.js"></script></body></html>
