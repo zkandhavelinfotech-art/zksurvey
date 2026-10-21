@@ -3,9 +3,10 @@
  * Root entry point for hosting providers like GoDaddy cPanel (Phusion Passenger),
  * Railway, Heroku, or Plesk that expect app.js in the application root.
  */
-const { main } = require('./server/src/index');
+const { main, logDbHelp } = require('./server/src/index');
 
 main().catch(err => {
+  if (typeof logDbHelp === 'function') logDbHelp(err);
   console.error('Fatal startup error in ZKSurvey:', err);
   process.exit(1);
 });

@@ -1,8 +1,29 @@
 'use strict';
 const env = process.env;
 const prod = env.NODE_ENV === 'production';
-const dbUrl = env.MYSQL_URL || env.DATABASE_URL || 'postgres://zk:zk@localhost:5432/zksurvey';
-const isMySql = env.DB_DIALECT === 'mysql' || /^mysql(2)?:/i.test(dbUrl) || !!env.MYSQL_URL;
+// Support discrete MySQL env variables (common in cPanel / shared hosting)
+const mysqlHost = env.MYSQL_HOST || env.DB_HOST || '127.0.0.1';
+const mysqlPort = env.MYSQL_PORT || env.DB_PORT || '3306';
+const mysqlUser = env.MYSQL_USER || env.DB_USER;
+const mysqlPass = env.MYSQL_PASSWORD || env.MYSQL_PASS || env.DB_PASSWORD || env.DB_PASS || '';
+const mysqlDb = env.MYSQL_DATABASE || env.MYSQL_DB || env.DB_NAME;
+
+let dbUrl = env.MYSQL_URL || env.DATABASE_URL;
+let isMySql = env.DB_DIALECT === 'mysql' || /^mysql(2)?:/i.test(dbUrl || '') || !!env.MYSQL_URL;
+
+if (!dbUrl && (mysqlUser && mysqlDb)) {
+  dbUrl = `mysql://${encodeURIComponent(mysqlUser)}:${encodeURIComponent(mysqlPass)}@${mysqlHost}:${mysqlPort}/${mysqlDb}`;
+  isMySql = true;
+}
+
+if (!dbUrl) {
+  if (env.DB_DIALECT === 'mysql') {
+    dbUrl = 'mysql://root:@127.0.0.1:3306/zksurvey';
+    isMySql = true;
+  } else {
+    dbUrl = 'postgres://zk:zk@localhost:5432/zksurvey';
+  }
+}
 
 const cfg = {
   prod,

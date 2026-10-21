@@ -16,6 +16,23 @@ async function main() {
   const t2 = setInterval(() => purgeRetention().catch(e => console.error('retention job', e.message)), 24 * 3600 * 1000); t2.unref();
   const stop = () => { server.close(() => pool.end().then(() => process.exit(0))); setTimeout(() => process.exit(1), 8000).unref(); };
   process.on('SIGTERM', stop); process.on('SIGINT', stop);
+function logDbHelp(e) {
+  if ((e.code === 'EACCES' || e.code === 'ECONNREFUSED') && (e.port === 5432 || /5432/.test(e.message))) {
+    console.error('\n' + '='.repeat(68));
+    console.error('DATABASE ERROR: Attempted to connect to PostgreSQL on port 5432.');
+    console.error('If you are on GoDaddy or cPanel shared hosting, PostgreSQL is not supported.');
+    console.error('Please configure your cPanel Environment Variables to use MySQL:');
+    console.error('  DB_DIALECT=mysql');
+    console.error('  MYSQL_URL=mysql://<db_user>:<db_pass>@127.0.0.1:3306/<db_name>');
+    console.error('='.repeat(68) + '\n');
+  }
 }
-if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
-module.exports = { main };
+
+if (require.main === module) {
+  main().catch(e => {
+    logDbHelp(e);
+    console.error(e);
+    process.exit(1);
+  });
+}
+module.exports = { main, logDbHelp };
