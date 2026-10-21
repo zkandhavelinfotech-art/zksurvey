@@ -6,7 +6,7 @@ const isMySql = env.DB_DIALECT === 'mysql' || /^mysql(2)?:/i.test(dbUrl) || !!en
 
 const cfg = {
   prod,
-  port: parseInt(env.PORT || '3000', 10),
+  port: /^\d+$/.test(String(env.PORT || '3000').trim()) ? parseInt(env.PORT || '3000', 10) : (env.PORT || '3000'),
   dbDialect: isMySql ? 'mysql' : 'postgres',
   databaseUrl: dbUrl,
   appUrl: (env.APP_URL || 'http://localhost:' + (env.PORT || '3000')).replace(/\/$/, ''),
